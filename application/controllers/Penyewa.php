@@ -12,7 +12,7 @@ class Penyewa extends CI_Controller {
     }
 
     public function index() {
-        $data['pemesanan'] = $this->Kosan_model->get_pemesanan_by_penyewa($this->session->userdata('username'));
+        $data['pemesanan'] = $this->Kosan_model->get_pemesanan_by_penyewa($this->session->userdata('user_id'));
         $this->load->view('templates/header');
         $this->load->view('penyewa/index', $data);
         $this->load->view('templates/footer');
@@ -24,26 +24,49 @@ class Penyewa extends CI_Controller {
             show_404();
         }
 
-        $this->form_validation->set_rules('durasi', 'Durasi Sewa (bulan)', 'required|numeric');
-        $this->form_validation->set_rules('tanggal_mulai', 'Tanggal Mulai', 'required');
+        $this->form_validation->set_rules('durasi', 'Durasi Sewa (bulan)', 'required|numeric|greater_than[0]');
+        $this->form_validation->set_rules('tanggal_mulai', 'Tanggal Mulai', 'required|callback_valid_date');
 
         if ($this->form_validation->run() === FALSE) {
             $this->load->view('templates/header');
             $this->load->view('penyewa/sewa', $data);
             $this->load->view('templates/footer');
         } else {
+            $durasi = $this->input->post('durasi');
+            $tanggal_mulai = $this->input->post('tanggal_mulai');
+            $tanggal_selesai = date('Y-m-d', strtotime($tanggal_mulai . ' + ' . $durasi . ' months - 1 day'));
+
             $pemesanan = array(
                 'kosan_id' => $kosan_id,
-                'penyewa_username' => $this->session->userdata('username'),
-                'durasi' => $this->input->post('durasi'),
-                'tanggal_mulai' => $this->input->post('tanggal_mulai'),
-                'total_harga' => $data['kosan']['harga'] * $this->input->post('durasi'),
-                'status' => 'pending'
+                'penyewa_id' => $this->session->userdata('user_id'),
+                'tanggal_mulai' => $tanggal_mulai,
+                'tanggal_selesai' => $tanggal_selesai,
+                'status' => 'menunggu'
             );
 
             $this->Kosan_model->insert_pemesanan($pemesanan);
             $this->session->set_flashdata('success', 'Pemesanan berhasil diajukan. Menunggu konfirmasi pemilik.');
             redirect('penyewa');
         }
+    }
+
+    public function valid_date($date) {
+        $d = DateTime::createFromFormat('Y-m-d', $date);
+        if ($d && $d->format('Y-m-d') === $date && $d >= new DateTime()) {
+            return TRUE;
+        } else {
+            $this->form_validation->set_message('valid_date', 'Tanggal mulai harus valid dan tidak boleh di masa lalu.');
+            return FALSE;
+        }
+    }
+
+    public function cancel_pemesanan($id) {
+        $penyewa_id = $this->session->userdata('user_id');
+        if ($this->Kosan_model->cancel_pemesanan($id, $penyewa_id)) {
+            $this->session->set_flashdata('success', 'Pemesanan berhasil dibatalkan.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal membatalkan pemesanan. Pastikan status masih menunggu.');
+        }
+        redirect('penyewa');
     }
 }

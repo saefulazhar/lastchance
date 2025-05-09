@@ -3,6 +3,7 @@
     <p>Selamat datang, <?php echo $this->session->userdata('username'); ?>!</p>
     <p>Sebagai pemilik, Anda dapat mengelola kosan Anda dan melihat pemesanan dari penyewa.</p>
     <a href="<?php echo base_url('pemilik/tambah_kosan'); ?>" class="btn btn-primary mb-3">Tambah Kosan Baru</a>
+    <a href="<?php echo base_url('pemilik/sewa'); ?>" class="btn btn-primary mb-3">daftar sewa</a>
     <h2>Daftar Kosan Anda</h2>
     <?php if ($this->session->flashdata('success')): ?>
         <div class="alert alert-success"><?php echo $this->session->flashdata('success'); ?></div>
