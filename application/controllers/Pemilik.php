@@ -261,4 +261,24 @@ class Pemilik extends CI_Controller {
         $this->session->set_flashdata('success', 'Kosan berhasil dihapus.');
         redirect('pemilik');
     }
+
+    public function sewa() {
+        $pemilik_id = $this->session->userdata('user_id');
+        $data['sewa'] = $this->Kosan_model->get_pemesanan_by_pemilik($pemilik_id);
+        $this->load->view('templates/header');
+        $this->load->view('pemilik/sewa', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function terima_sewa($id) {
+        $this->Kosan_model->update_pemesanan_status($id, 'diterima');
+        $this->session->set_flashdata('success', 'Pemesanan berhasil diterima.');
+        redirect('pemilik/sewa');
+    }
+
+    public function tolak_sewa($id) {
+        $this->Kosan_model->update_pemesanan_status($id, 'ditolak');
+        $this->session->set_flashdata('success', 'Pemesanan berhasil ditolak.');
+        redirect('pemilik/sewa');
+    }
 }

@@ -72,14 +72,12 @@ class Kosan_model extends CI_Model {
     }
 
     public function insert_fasilitas($kosan_id, $nama_fasilitas) {
-        // Cek apakah fasilitas sudah ada
         $this->db->select('id');
         $this->db->from('fasilitas');
         $this->db->where('nama_fasilitas', $nama_fasilitas);
         $fasilitas = $this->db->get()->row_array();
 
         if (!$fasilitas) {
-            // Jika belum ada, masukkan ke tabel fasilitas
             $data_fasilitas = array('nama_fasilitas' => $nama_fasilitas);
             $this->db->insert('fasilitas', $data_fasilitas);
             $fasilitas_id = $this->db->insert_id();
@@ -87,7 +85,6 @@ class Kosan_model extends CI_Model {
             $fasilitas_id = $fasilitas['id'];
         }
 
-        // Masukkan relasi ke tabel kosan_fasilitas
         $data = array(
             'kosan_id' => $kosan_id,
             'fasilitas_id' => $fasilitas_id
@@ -111,28 +108,47 @@ class Kosan_model extends CI_Model {
     }
 
     public function delete_kosan($id) {
-        // Hapus data terkait di tabel foto_kosan
         $this->db->where('kosan_id', $id);
         $this->db->delete('foto_kosan');
-
-        // Hapus data terkait di tabel kosan_fasilitas
         $this->db->where('kosan_id', $id);
         $this->db->delete('kosan_fasilitas');
-
-        // Hapus data dari tabel kosan
         $this->db->where('id', $id);
         $this->db->delete('kosan');
     }
 
     public function insert_pemesanan($data) {
-        $this->db->insert('pemesanan', $data);
+        $this->db->insert('sewa', $data);
     }
 
-    public function get_pemesanan_by_penyewa($penyewa_username) {
-        $this->db->select('pemesanan.*, kosan.nama as nama_kosan');
-        $this->db->from('pemesanan');
-        $this->db->join('kosan', 'kosan.id = pemesanan.kosan_id');
-        $this->db->where('pemesanan.penyewa_username', $penyewa_username);
+    public function get_pemesanan_by_pemilik($pemilik_id) {
+        $this->db->select('sewa.*, kosan.nama as nama_kosan, kosan.harga as harga_kosan, users.username as penyewa_username');
+        $this->db->from('sewa');
+        $this->db->join('kosan', 'kosan.id = sewa.kosan_id');
+        $this->db->join('users', 'users.id = sewa.penyewa_id');
+        $this->db->where('kosan.pemilik_id', $pemilik_id);
+        $result = $this->db->get()->result_array();
+        // Debugging: Log hasil query
+        log_message('debug', 'Hasil get_pemesanan_by_pemilik: ' . print_r($result, true));
+        return $result;
+    }
+    public function update_pemesanan_status($id, $status) {
+        $this->db->where('id', $id);
+        $this->db->update('sewa', array('status' => $status));
+    }
+
+    public function get_pemesanan_by_penyewa($penyewa_id) {
+        $this->db->select('sewa.*, kosan.nama as nama_kosan, kosan.harga as harga_kosan'); // Tambahkan harga_kosan untuk perhitungan
+        $this->db->from('sewa');
+        $this->db->join('kosan', 'kosan.id = sewa.kosan_id');
+        $this->db->where('sewa.penyewa_id', $penyewa_id);
         return $this->db->get()->result_array();
+    }
+
+    public function cancel_pemesanan($id, $penyewa_id) {
+        $this->db->where('id', $id);
+        $this->db->where('penyewa_id', $penyewa_id);
+        $this->db->where('status', 'menunggu');
+        $this->db->update('sewa', array('status' => 'dibatalkan'));
+        return $this->db->affected_rows() > 0;
     }
 }

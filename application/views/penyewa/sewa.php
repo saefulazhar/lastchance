@@ -1,23 +1,25 @@
-<div class="container mt-4">
-    <h1>Pemesanan Kosan: <?php echo $kosan['nama']; ?></h1>
-    <?php if ($this->session->flashdata('success')): ?>
-        <div class="alert alert-success"><?php echo $this->session->flashdata('success'); ?></div>
+<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
+<div class="container mt-5">
+    <h2>Ajukan Pemesanan untuk <?php echo $kosan['nama']; ?></h2>
+
+    <?php if (validation_errors()): ?>
+        <div class="alert alert-danger"><?php echo validation_errors(); ?></div>
     <?php endif; ?>
-    <?php if ($this->session->flashdata('error') || validation_errors()): ?>
-        <div class="alert alert-danger"><?php echo $this->session->flashdata('error') ?: validation_errors(); ?></div>
-    <?php endif; ?>
-    <form method="post" action="<?php echo base_url('penyewa/sewa/' . $kosan['id']); ?>">
-        <div class="mb-3">
-            <label for="durasi" class="form-label">Durasi Sewa (bulan)</label>
-            <input type="number" class="form-control" id="durasi" name="durasi" required>
+
+    <form action="<?php echo base_url('penyewa/sewa/' . $kosan['id']); ?>" method="post">
+        <div class="form-group">
+            <label for="durasi">Durasi Sewa (bulan)</label>
+            <input type="number" class="form-control" id="durasi" name="durasi" value="<?php echo set_value('durasi'); ?>" min="1" required>
         </div>
-        <div class="mb-3">
-            <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
-            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" required>
+        <div class="form-group">
+            <label for="tanggal_mulai">Tanggal Mulai</label>
+            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="<?php echo set_value('tanggal_mulai'); ?>" required>
         </div>
-        <div class="mb-3">
-            <p><strong>Harga per Bulan:</strong> Rp <?php echo number_format($kosan['harga'], 0, ',', '.'); ?></p>
+        <div class="form-group">
+            <label>Harga per Bulan</label>
+            <p>Rp <?php echo number_format($kosan['harga'], 0, ',', '.'); ?></p>
         </div>
-        <button type="submit" class="btn btn-success">Ajukan Pemesanan</button>
+        <button type="submit" class="btn btn-primary">Ajukan Pemesanan</button>
+        <a href="<?php echo base_url('home/detail/' . $kosan['id']); ?>" class="btn btn-secondary">Kembali</a>
     </form>
 </div>
