@@ -8,11 +8,22 @@ class Penyewa extends CI_Controller {
             redirect('auth/login');
         }
         $this->load->model('Kosan_model');
+        $this->load->model('Sewa_model');
+        $this->load->model('Ulasan_model');
         $this->load->library('form_validation');
     }
 
     public function index() {
         $data['pemesanan'] = $this->Kosan_model->get_pemesanan_by_penyewa($this->session->userdata('user_id'));
+        $penyewa_id = $this->session->userdata('user_id');
+        // Ambil jumlah sewa aktif untuk dashboard
+        $this->db->where('penyewa_id', $penyewa_id);
+        $this->db->where('status', 'aktif');
+        $data['active_sewa_count'] = $this->db->count_all_results('sewa');
+
+        // Ambil jumlah ulasan yang sudah diberikan
+        $this->db->where('penyewa_id', $penyewa_id);
+        $data['ulasan_count'] = $this->db->count_all_results('ulasan');
         $this->load->view('templates/header');
         $this->load->view('penyewa/index', $data);
         $this->load->view('templates/footer');
@@ -68,5 +79,85 @@ class Penyewa extends CI_Controller {
             $this->session->set_flashdata('error', 'Gagal membatalkan pemesanan. Pastikan status masih menunggu.');
         }
         redirect('penyewa');
+    }
+
+    public function my_sewa() {
+    $penyewa_id = $this->session->userdata('user_id');
+    $data['menunggu'] = $this->Sewa_model->get_sewa_by_penyewa($penyewa_id); // Harus difilter 'menunggu' di Kosan_model
+    $data['sewa_aktif'] = $this->Sewa_model->get_sewa_aktif_by_penyewa($penyewa_id);
+    $data['sewa_selesai'] = $this->Sewa_model->get_sewa_selesai_by_penyewa($penyewa_id);
+    foreach ($data['sewa_aktif'] as &$sewa) {
+        $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
+    }
+    foreach ($data['sewa_selesai'] as &$sewa) {
+        $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
+    }
+    $this->load->view('templates/header');
+    $this->load->view('penyewa/my_sewa', $data);
+    $this->load->view('templates/footer');
+}
+
+    public function add_ulasan($sewa_id) {
+        $penyewa_id = $this->session->userdata('user_id');
+        $sewa = $this->Sewa_model->get_sewa_by_id($sewa_id, $penyewa_id);
+
+        if (!$sewa) {
+            $this->session->set_flashdata('error', 'Sewa tidak ditemukan atau Anda tidak memiliki akses.');
+            redirect('penyewa/sewa');
+        }
+
+        // Cek apakah sudah ada ulasan
+        if ($this->Ulasan_model->get_ulasan_by_sewa($sewa_id)) {
+            $this->session->set_flashdata('error', 'Anda sudah memberikan ulasan untuk sewa ini.');
+            redirect('penyewa/sewa');
+        }
+
+        $data['sewa'] = $sewa;
+        $this->load->view('templates/header');
+        $this->load->view('penyewa/add_ulasan', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function save_ulasan() {
+        $penyewa_id = $this->session->userdata('user_id');
+        $sewa_id = $this->input->post('sewa_id');
+        $kosan_id = $this->input->post('kosan_id');
+
+        // Validasi sewa
+        $sewa = $this->Sewa_model->get_sewa_by_id($sewa_id, $penyewa_id);
+        if (!$sewa) {
+            $this->session->set_flashdata('error', 'Sewa tidak ditemukan atau Anda tidak memiliki akses.');
+            redirect('penyewa/sewa');
+        }
+
+        // Cek apakah sudah ada ulasan
+        if ($this->Ulasan_model->get_ulasan_by_sewa($sewa_id)) {
+            $this->session->set_flashdata('error', 'Anda sudah memberikan ulasan untuk sewa ini.');
+            redirect('penyewa/sewa');
+        }
+
+        // Validasi input
+        $this->form_validation->set_rules('rating', 'Rating', 'required|integer|greater_than[0]|less_than[6]');
+        $this->form_validation->set_rules('ulasan', 'Ulasan', 'required');
+
+        if ($this->form_validation->run() === FALSE) {
+            $data['sewa'] = $sewa;
+            $this->load->view('templates/header');
+            $this->load->view('penyewa/add_ulasan', $data);
+            $this->load->view('templates/footer');
+        } else {
+            $data = [
+                'sewa_id' => $sewa_id,
+                'kosan_id' => $kosan_id,
+                'penyewa_id' => $penyewa_id,
+                'rating' => $this->input->post('rating'),
+                'ulasan' => $this->input->post('ulasan')
+                
+            ];
+
+            $this->Ulasan_model->create_ulasan($data);
+            $this->session->set_flashdata('success', 'Ulasan dan rating berhasil disimpan.');
+            redirect('penyewa/my_sewa');
+        }
     }
 }

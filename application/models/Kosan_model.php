@@ -2,30 +2,56 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Kosan_model extends CI_Model {
-    public function search_kosan($cari = '', $tipe = '', $kepribadian = '') {
+     public function search_kosan($cari = '', $tipe = '', $kepribadian = '') {
+    $this->db->cache_off();
+    $this->db->select('kosan.id, kosan.nama, kosan.harga, kosan.alamat, 
+                       (SELECT GROUP_CONCAT(CONCAT("uploads/kosan/", path) SEPARATOR ",") FROM foto_kosan WHERE foto_kosan.kosan_id = kosan.id) as foto_paths, 
+                       COALESCE(AVG(ulasan.rating), 0) as avg_rating, 
+                       (SELECT COUNT(*) FROM ulasan WHERE ulasan.kosan_id = kosan.id) as review_count,
+                       (SELECT ulasan FROM ulasan WHERE ulasan.kosan_id = kosan.id ORDER BY created_at DESC LIMIT 1) as latest_review');
+    $this->db->from('kosan');
+    $this->db->join('ulasan', 'ulasan.kosan_id = kosan.id', 'left');
+
+    if (!empty($cari)) {
+        $this->db->group_start();
+        $this->db->like('kosan.nama', $cari);
+        $this->db->or_like('kosan.alamat', $cari);
+        $this->db->or_like('kosan.kecamatan', $cari);
+        $this->db->or_like('kosan.desa', $cari);
+        $this->db->group_end();
+    }
+
+    if (!empty($tipe)) {
+        $this->db->where('kosan.tipe', $tipe);
+    }
+
+    if (!empty($kepribadian)) {
+        $this->db->where('kosan.kepribadian', $kepribadian);
+    }
+
+    $this->db->group_by('kosan.id');
+    $query = $this->db->get();
+    log_message('debug', 'Query: ' . $this->db->last_query());
+    log_message('debug', 'Result: ' . print_r($query->result_array(), true));
+    return $query->result_array();
+}
+
+    public function get_all_kosan() {
         $this->db->select('kosan.*, GROUP_CONCAT(CONCAT("uploads/kosan/", foto_kosan.path) SEPARATOR ",") as foto_paths');
         $this->db->from('kosan');
         $this->db->join('foto_kosan', 'foto_kosan.kosan_id = kosan.id', 'left');
-
-        if (!empty($cari)) {
-            $this->db->group_start();
-            $this->db->like('kosan.nama', $cari);
-            $this->db->or_like('kosan.alamat', $cari);
-            $this->db->or_like('kosan.kecamatan', $cari);
-            $this->db->or_like('kosan.desa', $cari);
-            $this->db->group_end();
-        }
-
-        if (!empty($tipe)) {
-            $this->db->where('kosan.tipe', $tipe);
-        }
-
-        if (!empty($kepribadian)) {
-            $this->db->where('kosan.kepribadian', $kepribadian);
-        }
-
         $this->db->group_by('kosan.id');
-        return $this->db->get()->result_array();
+        $query = $this->db->get();
+    log_message('debug', 'Query: ' . $this->db->last_query());
+    log_message('debug', 'Result: ' . print_r($query->result_array(), true));
+    return $query->result_array();
+    }
+
+    public function get_average_rating($kosan_id) {
+        $this->db->select_avg('rating');
+        $this->db->where('kosan_id', $kosan_id);
+        $result = $this->db->get('ulasan')->row_array();
+        return $result['rating'] ? number_format($result['rating'], 1) : 0;
     }
 
     public function get_kosan_by_id($id) {
@@ -151,4 +177,12 @@ class Kosan_model extends CI_Model {
         $this->db->update('sewa', array('status' => 'dibatalkan'));
         return $this->db->affected_rows() > 0;
     }
+
+     public function get_ulasan_by_kosan($kosan_id) {
+        $this->db->select('ulasan.*, users.username as penyewa_username');
+        $this->db->from('ulasan');
+        $this->db->join('users', 'users.id = ulasan.penyewa_id');
+        $this->db->where('ulasan.kosan_id', $kosan_id);
+        return $this->db->get()->result_array();    
+}
 }

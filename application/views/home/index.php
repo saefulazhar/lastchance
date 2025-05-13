@@ -38,9 +38,29 @@
                         ?>
                         <img src="<?php echo $first_foto; ?>" class="card-img-top" alt="Foto Kosan" style="height: 200px; object-fit: cover;">
                         <div class="card-body">
-                            <h5 class="card-title"><?php echo $k['nama']; ?></h5>
+                            <h5 class="card-title"><?php echo htmlspecialchars($k['nama']); ?></h5>
                             <p class="card-text">Rp <?php echo number_format($k['harga'], 0, ',', '.'); ?> / bulan</p>
-                            <p class="card-text"><?php echo $k['alamat']; ?></p>
+                            <p class="card-text"><?php echo htmlspecialchars($k['alamat']); ?></p>
+                            <p class="card-text">
+                                Rating: 
+                                <?php if (isset($k['avg_rating']) && $k['avg_rating'] > 0): ?>
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <?php if ($i <= floor($k['avg_rating'])): ?>
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        <?php elseif ($i - 0.5 <= $k['avg_rating']): ?>
+                                            <i class="bi bi-star-half text-warning"></i>
+                                        <?php else: ?>
+                                            <i class="bi bi-star text-warning"></i>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                    (<?php echo number_format($k['avg_rating'], 1); ?>, <?php echo $k['review_count']; ?> ulasan)
+                                <?php else: ?>
+                                    Belum ada rating
+                                <?php endif; ?>
+                            </p>
+                            <?php if (isset($k['latest_review']) && !empty($k['latest_review'])): ?>
+                                <p class="card-text"><strong>Ulasan Terbaru:</strong> <?php echo htmlspecialchars($k['latest_review']); ?></p>
+                            <?php endif; ?>
                             <a href="<?php echo base_url('home/detail/' . $k['id']); ?>" class="btn btn-primary">Lihat Detail</a>
                         </div>
                     </div>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Penyewa</title>
+    <title>Riwayat Sewa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
@@ -56,34 +56,16 @@
         <div class="flex-grow-1 d-flex flex-column">
             <!-- Content Area -->
             <main class="flex-grow-1 p-4 bg-light">
-                <h1>Dashboard Penyewa</h1>
+                <h1>Riwayat Sewa Saya</h1>
                 <?php if ($this->session->flashdata('success')): ?>
                     <div class="alert alert-success"><?php echo $this->session->flashdata('success'); ?></div>
                 <?php endif; ?>
                 <?php if ($this->session->flashdata('error')): ?>
                     <div class="alert alert-danger"><?php echo $this->session->flashdata('error'); ?></div>
                 <?php endif; ?>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Sewa Aktif</h5>
-                                <p class="card-text">Anda memiliki <strong><?php echo isset($active_sewa_count) ? $active_sewa_count : 0; ?></strong> sewa aktif saat ini.</p>
-                                <a href="<?php echo base_url('penyewa/my_sewa'); ?>" class="btn btn-primary">Lihat Riwayat Sewa</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Ulasan Anda</h5>
-                                <p class="card-text">Anda telah memberikan <strong><?php echo isset($ulasan_count) ? $ulasan_count : 0; ?></strong> ulasan.</p>
-                                <a href="<?php echo base_url('penyewa/riwayat_ulasan'); ?>" class="btn btn-primary">Lihat Riwayat Ulasan</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <h2>Pemesanan Saya</h2>
+
+                <!-- Pemesanan (Menunggu Konfirmasi) -->
+                <h2>Menunggu Konfirmasi</h2>
                 <?php if (!empty($pemesanan)): ?>
                     <table class="table table-bordered mt-3">
                         <thead>
@@ -103,7 +85,7 @@
                                     <td><?php echo htmlspecialchars($pem['tanggal_selesai']); ?></td>
                                     <td><?php echo htmlspecialchars($pem['status']); ?></td>
                                     <td>
-                                        <?php if ($pem['status'] === 'menunggu'): ?>
+                                        <?php if ($pem['status'] == 'menunggu'): ?>
                                             <a href="<?php echo base_url('penyewa/cancel_pemesanan/' . $pem['id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin membatalkan pemesanan?');">Batalkan</a>
                                         <?php else: ?>
                                             <span class="text-muted">Tidak dapat dibatalkan</span>
@@ -115,6 +97,76 @@
                     </table>
                 <?php else: ?>
                     <p class="mt-3">Anda belum memiliki pemesanan.</p>
+                <?php endif; ?>
+
+                <!-- Sewa Aktif -->
+                <h2>Sewa Aktif</h2>
+                <?php if (!empty($sewa_aktif)): ?>
+                    <table class="table table-bordered mt-3">
+                        <thead>
+                            <tr>
+                                <th>Nama Kosan</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($sewa_aktif as $sewa): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($sewa['nama_kosan']); ?></td>
+                                    <td><?php echo htmlspecialchars($sewa['tanggal_mulai']); ?></td>
+                                    <td><?php echo htmlspecialchars($sewa['tanggal_selesai']); ?></td>
+                                    <td><?php echo htmlspecialchars($sewa['status']); ?></td>
+                                    <td>
+                                        <?php if (!$sewa['has_ulasan']): ?>
+                                            <a href="<?php echo base_url('penyewa/add_ulasan/' . $sewa['id']); ?>" class="btn btn-primary btn-sm">Beri Ulasan</a>
+                                        <?php else: ?>
+                                            <span class="text-muted">Sudah diulas</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p class="mt-3">Anda belum memiliki sewa aktif.</p>
+                <?php endif; ?>
+
+                <!-- Sewa Selesai -->
+                <h2>Sewa Selesai</h2>
+                <?php if (!empty($sewa_selesai)): ?>
+                    <table class="table table-bordered mt-3">
+                        <thead>
+                            <tr>
+                                <th>Nama Kosan</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Selesai</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($sewa_selesai as $sewa): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($sewa['nama_kosan']); ?></td>
+                                    <td><?php echo htmlspecialchars($sewa['tanggal_mulai']); ?></td>
+                                    <td><?php echo htmlspecialchars($sewa['tanggal_selesai']); ?></td>
+                                    <td><?php echo htmlspecialchars($sewa['status']); ?></td>
+                                    <td>
+                                        <?php if (!$sewa['has_ulasan']): ?>
+                                            <a href="<?php echo base_url('penyewa/add_ulasan/' . $sewa['id']); ?>" class="btn btn-primary btn-sm">Beri Ulasan</a>
+                                        <?php else: ?>
+                                            <span class="text-muted">Sudah diulas</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p class="mt-3">Anda belum memiliki sewa yang selesai.</p>
                 <?php endif; ?>
             </main>
         </div>

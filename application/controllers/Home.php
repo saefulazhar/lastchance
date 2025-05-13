@@ -8,16 +8,15 @@ class Home extends CI_Controller {
     }
 
     public function index() {
-        $cari = $this->input->get('cari');
-        $tipe = $this->input->get('tipe');
-        $kepribadian = $this->input->get('kepribadian');
+    $cari = $this->input->get('cari');
+    $tipe = $this->input->get('tipe');
+    $kepribadian = $this->input->get('kepribadian');
 
-        $data['kosan'] = $this->Kosan_model->search_kosan($cari, $tipe, $kepribadian);
-        $this->load->view('templates/header');
-        $this->load->view('home/index', $data);
-        $this->load->view('templates/footer');
-    }
-
+    $data['kosan'] = $this->Kosan_model->search_kosan($cari, $tipe, $kepribadian);
+    $this->load->view('templates/header');
+    $this->load->view('home/index', $data);
+    $this->load->view('templates/footer');
+}
     public function detail($id) {
         $data['kosan'] = $this->Kosan_model->get_kosan_by_id($id);
         if (!$data['kosan']) {
