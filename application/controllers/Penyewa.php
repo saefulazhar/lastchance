@@ -93,6 +93,7 @@ class Penyewa extends CI_Controller {
         $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
     }
     $this->load->view('templates/header');
+    $this->load->view('templates/sidebar');
     $this->load->view('penyewa/my_sewa', $data);
     $this->load->view('templates/footer');
 }
@@ -160,4 +161,73 @@ class Penyewa extends CI_Controller {
             redirect('penyewa/my_sewa');
         }
     }
+
+    public function riwayat_ulasan() {
+        $penyewa_id = $this->session->userdata('user_id');
+        $data['riwayat_ulasan'] = $this->Ulasan_model->get_ulasan_by_penyewa($penyewa_id);
+        $this->load->view('templates/header');
+        $this->load->view('templates/sidebar');
+        $this->load->view('penyewa/riwayat_ulasan', $data);
+        $this->load->view('templates/footer');
+    }
+
+public function laporan() {
+    $penyewa_id = $this->session->userdata('penyewa_id');
+    $data['laporan'] = $this->Sewa_model->get_laporan_by_penyewa($penyewa_id);
+    $this->load->view('templates/header');
+    $this->load->view('templates/sidebar');
+    $this->load->view('penyewa/laporan', $data);
+    $this->load->view('templates/footer');
+}
+
+public function edit_ulasan($ulasan_id) {
+    $penyewa_id = $this->session->userdata('user_id');
+    $data['ulasan'] = $this->Ulasan_model->get_ulasan_by_id($ulasan_id, $penyewa_id);
+
+    if (!$data['ulasan']) {
+        $this->session->set_flashdata('error', 'Ulasan tidak ditemukan atau Anda tidak memiliki akses.');
+        redirect('penyewa/riwayat_ulasan');
+    }
+
+    $this->form_validation->set_rules('rating', 'Rating', 'required|integer|greater_than[0]|less_than[6]');
+    $this->form_validation->set_rules('ulasan', 'Ulasan', 'required');
+
+    if ($this->form_validation->run() === FALSE) {
+        $this->load->view('templates/header');
+        $this->load->view('penyewa/edit_ulasan', $data);
+        $this->load->view('templates/footer');
+    } else {
+        $update_data = [
+            'rating' => $this->input->post('rating'),
+            'ulasan' => $this->input->post('ulasan')
+        ];
+
+        if ($this->Ulasan_model->update_ulasan($ulasan_id, $update_data)) {
+            $this->session->set_flashdata('success', 'Ulasan berhasil diperbarui.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal memperbarui ulasan.');
+        }
+        redirect('penyewa/riwayat_ulasan');
+    }
+}
+
+public function profile() {
+    $user_id = $this->session->userdata('user_id');
+    if (!$user_id) {
+        redirect('auth/login');
+    }
+
+    $this->load->model('User_model');
+    $data['user'] = $this->User_model->get_user_by_id($user_id);
+
+    if (!$data['user']) {
+        $this->session->set_flashdata('error', 'Pengguna tidak ditemukan.');
+        redirect('auth/login');
+    }
+
+    $this->load->view('templates/header');
+    $this->load->view('templates/sidebar');
+    $this->load->view('penyewa/profile', $data);
+    $this->load->view('templates/footer');
+}
 }
