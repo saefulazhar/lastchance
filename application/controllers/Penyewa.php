@@ -83,7 +83,7 @@ class Penyewa extends CI_Controller {
 
     public function my_sewa() {
     $penyewa_id = $this->session->userdata('user_id');
-    $data['menunggu'] = $this->Sewa_model->get_sewa_by_penyewa($penyewa_id); // Harus difilter 'menunggu' di Kosan_model
+    $data['menunggu'] = $this->Sewa_model->get_sewa_menunggu_by_penyewa($penyewa_id); // Harus difilter 'menunggu' di Kosan_model
     $data['sewa_aktif'] = $this->Sewa_model->get_sewa_aktif_by_penyewa($penyewa_id);
     $data['sewa_selesai'] = $this->Sewa_model->get_sewa_selesai_by_penyewa($penyewa_id);
     foreach ($data['sewa_aktif'] as &$sewa) {

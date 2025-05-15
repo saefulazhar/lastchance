@@ -12,7 +12,7 @@
 
                 <!-- Pemesanan (Menunggu Konfirmasi) -->
                 <h2>Menunggu Konfirmasi</h2>
-                <?php if (!empty($pemesanan)): ?>
+                <?php if (!empty($menunggu)): ?>
                     <table class="table table-bordered mt-3">
                         <thead>
                             <tr>
@@ -24,14 +24,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($pemesanan as $pem): ?>
+                            <?php foreach ($menunggu as $pem): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($pem['nama_kosan']); ?></td>
                                     <td><?php echo htmlspecialchars($pem['tanggal_mulai']); ?></td>
                                     <td><?php echo htmlspecialchars($pem['tanggal_selesai']); ?></td>
                                     <td><?php echo htmlspecialchars($pem['status']); ?></td>
                                     <td>
-                                        <?php if ($pem['status'] == 'menunggu'): ?>
+                                        <?php if ($pem['status'] === 'menunggu'): ?>
                                             <a href="<?php echo base_url('penyewa/cancel_pemesanan/' . $pem['id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin membatalkan pemesanan?');">Batalkan</a>
                                         <?php else: ?>
                                             <span class="text-muted">Tidak dapat dibatalkan</span>

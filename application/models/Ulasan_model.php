@@ -11,14 +11,15 @@ class Ulasan_model extends CI_Model {
         return $this->db->insert('ulasan', $data);
     }
 
-    public function get_ulasan_by_penyewa($penyewa_id) {
-       $this->db->select('u.id, u.rating, u.ulasan, u.created_at, k.nama as kosan_nama, k.id as kosan_id');
-    $this->db->from('ulasan u');
-    $this->db->join('sewa s', 's.penyewa_id = u.penyewa_id', 'left'); // Hubungkan ulasan dengan sewa melalui penyewa_id
-    $this->db->join('kosan k', 'k.id = s.kosan_id', 'left'); // Hubungkan sewa dengan kosan untuk mendapatkan nama dan id
-    $this->db->where('u.penyewa_id', $penyewa_id);
-    $this->db->order_by('u.created_at', 'DESC');
-    return $this->db->get()->result_array();
+   public function get_ulasan_by_penyewa($penyewa_id) {
+        $this->db->select('u.id, u.kosan_id, u.penyewa_id, u.ulasan, u.rating, u.created_at, u.sewa_id, k.nama as kosan_nama');
+        $this->db->from('ulasan u');
+        $this->db->join('kosan k', 'k.id = u.kosan_id', 'left'); // Hubungkan dengan tabel kosan
+        $this->db->join('sewa s', 's.id = u.sewa_id', 'left'); // Hubungkan dengan tabel sewa untuk validasi
+        $this->db->where('u.penyewa_id', $penyewa_id);
+        $this->db->group_by('u.id, u.kosan_id, u.penyewa_id, u.ulasan, u.rating, u.created_at, u.sewa_id, k.nama'); // Semua kolom non-agregat
+        $this->db->order_by('u.created_at', 'DESC');
+        return $this->db->get()->result_array();
     }
 
     public function get_ulasan_by_id($ulasan_id, $penyewa_id) {

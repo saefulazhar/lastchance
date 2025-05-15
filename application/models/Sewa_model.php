@@ -21,6 +21,14 @@ class Sewa_model extends CI_Model {
         return $this->db->get()->row_array();
     }
 
+    public function get_sewa_menunggu_by_penyewa($penyewa_id) {
+        $this->db->select('sewa.id, sewa.kosan_id, sewa.penyewa_id, sewa.tanggal_mulai, sewa.tanggal_selesai, sewa.status, kosan.nama as nama_kosan');
+        $this->db->from('sewa');
+        $this->db->join('kosan', 'kosan.id = sewa.kosan_id');
+        $this->db->where('sewa.penyewa_id', $penyewa_id);
+        $this->db->where('sewa.status', 'menunggu');
+        return $this->db->get()->result_array();    
+    }
     public function get_sewa_aktif_by_penyewa($penyewa_id) {
         $this->db->select('sewa.id, sewa.kosan_id, sewa.penyewa_id, sewa.tanggal_mulai, sewa.tanggal_selesai, sewa.status, kosan.nama as nama_kosan');
         $this->db->from('sewa');
