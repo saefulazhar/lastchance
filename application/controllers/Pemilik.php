@@ -21,9 +21,11 @@ class Pemilik extends CI_Controller {
         log_message('debug', 'Mengambil daftar kosan untuk pemilik_id: ' . $pemilik_id);
         $data['kosan'] = $this->Kosan_model->get_kosan_by_pemilik($pemilik_id);
         log_message('debug', 'Jumlah kosan yang ditemukan: ' . count($data['kosan']));
-        $this->load->view('templates/header');
-        $this->load->view('pemilik/index', $data);
-        $this->load->view('templates/footer');
+        $data['content_view'] = 'pemilik/index';
+        $data['title'] = 'Dashboard Pemilik - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
+        return;
     }
 
     public function tambah_kosan() {
@@ -39,9 +41,11 @@ class Pemilik extends CI_Controller {
         $this->form_validation->set_rules('fasilitas[]', 'Fasilitas', 'trim');
 
         if ($this->form_validation->run() === FALSE) {
-            $this->load->view('templates/header');
-            $this->load->view('pemilik/tambah_kosan');
-            $this->load->view('templates/footer');
+            $data['content_view'] = 'pemilik/tambah_kosan';
+        $data['title'] = 'Tambah Kosan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
+        
         } else {
             $upload_path = FCPATH . 'uploads/kosan/';
             if (!is_dir($upload_path)) {
@@ -51,9 +55,10 @@ class Pemilik extends CI_Controller {
 
             if (!is_writable($upload_path)) {
                 $this->session->set_flashdata('error', 'Direktori upload tidak dapat ditulis. Periksa izin folder: ' . $upload_path);
-                $this->load->view('templates/header');
-                $this->load->view('pemilik/tambah_kosan');
-                $this->load->view('templates/footer');
+                $data['content_view'] = 'pemilik/tambah_kosan';
+        $data['title'] = 'Tambah Kosan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                 return;
             }
 
@@ -82,9 +87,10 @@ class Pemilik extends CI_Controller {
                             $foto_paths[] = $upload_data['file_name'];
                         } else {
                             $this->session->set_flashdata('error', 'Gagal upload foto: ' . $this->upload->display_errors());
-                            $this->load->view('templates/header');
-                            $this->load->view('pemilik/tambah_kosan');
-                            $this->load->view('templates/footer');
+        $data['content_view'] = 'pemilik/tambah_kosan';
+        $data['title'] = 'Tambah Kosan - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
                             return;
                         }
                     }
@@ -147,9 +153,10 @@ class Pemilik extends CI_Controller {
         $this->form_validation->set_rules('fasilitas[]', 'Fasilitas', 'trim');
 
         if ($this->form_validation->run() === FALSE) {
-            $this->load->view('templates/header');
-            $this->load->view('pemilik/edit_kosan', $data);
-            $this->load->view('templates/footer');
+            $data['content_view'] = 'pemilik/edit_kosan';
+        $data['title'] = 'Edit Kosan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
         } else {
             $upload_path = FCPATH . 'uploads/kosan/';
             if (!is_dir($upload_path)) {
@@ -159,9 +166,10 @@ class Pemilik extends CI_Controller {
 
             if (!is_writable($upload_path)) {
                 $this->session->set_flashdata('error', 'Direktori upload tidak dapat ditulis. Periksa izin folder: ' . $upload_path);
-                $this->load->view('templates/header');
-                $this->load->view('pemilik/edit_kosan', $data);
-                $this->load->view('templates/footer');
+                $data['content_view'] = 'pemilik/edit_kosan';
+        $data['title'] = 'Edit Kosan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                 return;
             }
 
@@ -190,9 +198,10 @@ class Pemilik extends CI_Controller {
                             $foto_paths[] = $upload_data['file_name'];
                         } else {
                             $this->session->set_flashdata('error', 'Gagal upload foto: ' . $this->upload->display_errors());
-                            $this->load->view('templates/header');
-                            $this->load->view('pemilik/edit_kosan', $data);
-                            $this->load->view('templates/footer');
+                            $data['content_view'] = 'pemilik/edit_kosan';
+        $data['title'] = 'Edit Kosan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                             return;
                         }
                     }
@@ -265,9 +274,10 @@ class Pemilik extends CI_Controller {
     public function sewa() {
         $pemilik_id = $this->session->userdata('user_id');
         $data['sewa'] = $this->Kosan_model->get_pemesanan_by_pemilik($pemilik_id);
-        $this->load->view('templates/header');
-        $this->load->view('pemilik/sewa', $data);
-        $this->load->view('templates/footer');
+        $data['content_view'] = 'pemilik/sewa';
+        $data['title'] = 'Sewa - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function terima_sewa($id) {
