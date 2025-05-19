@@ -5,22 +5,25 @@ class Admin extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('User_model');
+        
         if (!$this->session->userdata('logged_in') || $this->session->userdata('role') != 'admin') {
             redirect('auth/login');
         }
     }
 
     public function index() {
-        $this->load->view('templates/header');
-        $this->load->view('admin/index');
-        $this->load->view('templates/footer');
+         $data['content_view'] = 'admin/index'; // View untuk halaman tentang
+        $data['title'] = 'Dashboard Admin - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function users() {
         $data['users'] = $this->User_model->get_all_users();
-        $this->load->view('templates/header');
-        $this->load->view('admin/users', $data);
-        $this->load->view('templates/footer');
+         $data['content_view'] = 'admin/users'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function delete_user($id) {
@@ -36,9 +39,10 @@ class Admin extends CI_Controller {
             redirect('admin/users');
         }
         $data['user'] = $user;
-        $this->load->view('templates/header');
-        $this->load->view('admin/edit_user', $data);
-        $this->load->view('templates/footer');
+         $data['content_view'] = 'admin/edit_user'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function update_user() {
@@ -78,9 +82,10 @@ class Admin extends CI_Controller {
 
         if ($this->form_validation->run() === FALSE) {
             $data['user'] = $user;
-            $this->load->view('templates/header');
-            $this->load->view('admin/edit_user', $data);
-            $this->load->view('templates/footer');
+             $data['content_view'] = 'admin/edit_user'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
         } else {
             // Hanya masukkan field yang diisi ke array data
             $data = [];
@@ -118,9 +123,10 @@ class Admin extends CI_Controller {
                 } else {
                     $this->session->set_flashdata('error', $this->upload->display_errors());
                     $data['user'] = $user;
-                    $this->load->view('templates/header');
-                    $this->load->view('admin/edit_user', $data);
-                    $this->load->view('templates/footer');
+                     $data['content_view'] = 'admin/edit_user'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                     return;
                 }
             }
@@ -158,9 +164,10 @@ class Admin extends CI_Controller {
     public function daftar_laporan() {
         $this->load->model('Laporan_model');
         $data['laporan'] = $this->Laporan_model->get_all_laporan();
-        $this->load->view('templates/header');
-        $this->load->view('admin/daftar_laporan', $data);
-        $this->load->view('templates/footer');
+         $data['content_view'] = 'admin/daftar_laporan'; // View untuk halaman tentang
+        $data['title'] = 'Daftar Laporan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function detail_laporan($laporan_id) {
@@ -170,9 +177,10 @@ class Admin extends CI_Controller {
             $this->session->set_flashdata('error', 'Laporan tidak ditemukan.');
             redirect('admin/daftar_laporan');
         }
-        $this->load->view('templates/header');
-        $this->load->view('admin/detail_laporan', $data);
-        $this->load->view('templates/footer');
+         $data['content_view'] = 'admin/detail_laporan'; // View untuk halaman tentang
+        $data['title'] = 'Detail Laporan - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
 }
