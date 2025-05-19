@@ -1,4 +1,4 @@
-<footer class="bg-light text-center py-3 mt-4">
+<footer class="bg-light text-center py-3 mt-4" style="color:black">
         <p>© 2025 BapakKos. All rights reserved.</p>
     </footer>
     <!-- Bootstrap 5 JS CDN -->

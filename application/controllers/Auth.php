@@ -18,9 +18,11 @@ class Auth extends CI_Controller {
         $this->form_validation->set_rules('password', 'Password', 'required');
 
         if ($this->form_validation->run() === FALSE) {
-            $this->load->view('templates/header');
-            $this->load->view('auth/login');
-            $this->load->view('templates/footer');
+            $data['content_view'] = 'auth/login';
+        $data['title'] = 'Login - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
+           
         } else {
             $username = $this->input->post('username');
             $password = $this->input->post('password');
@@ -59,18 +61,20 @@ class Auth extends CI_Controller {
         $this->form_validation->set_rules('role', 'Role', 'required|in_list[pemilik,penyewa]');
 
         if ($this->form_validation->run() === FALSE) {
-            $this->load->view('templates/header');
-            $this->load->view('auth/register');
-            $this->load->view('templates/footer');
+            $data['content_view'] = 'auth/register';
+        $data['title'] = 'Register - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
         } else {
             $upload_path = FCPATH . 'uploads/profile/';
             if (!is_dir($upload_path)) {
                 $created = mkdir($upload_path, 0777, TRUE);
                 if (!$created) {
                     $this->session->set_flashdata('error', 'Gagal membuat direktori upload. Periksa izin folder atau buat manually: ' . $upload_path);
-                    $this->load->view('templates/header');
-                    $this->load->view('auth/register');
-                    $this->load->view('templates/footer');
+                    $data['content_view'] = 'auth/register';
+        $data['title'] = 'Register - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                     return;
                 }
                 chmod($upload_path, 0777);
@@ -78,9 +82,10 @@ class Auth extends CI_Controller {
 
             if (!is_writable($upload_path)) {
                 $this->session->set_flashdata('error', 'Direktori upload tidak dapat ditulis. Periksa izin folder: ' . $upload_path);
-                $this->load->view('templates/header');
-                $this->load->view('auth/register');
-                $this->load->view('templates/footer');
+                $data['content_view'] = 'auth/register';
+        $data['title'] = 'Register - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                 return;
             }
 
@@ -99,9 +104,10 @@ class Auth extends CI_Controller {
                     $foto_profil = $upload_data['file_name'];
                 } else {
                     $this->session->set_flashdata('error', 'Gagal upload foto: ' . $this->upload->display_errors());
-                    $this->load->view('templates/header');
-                    $this->load->view('auth/register');
-                    $this->load->view('templates/footer');
+                    $data['content_view'] = 'auth/register';
+        $data['title'] = 'Register - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
                     return;
                 }
             }
