@@ -155,4 +155,24 @@ class Admin extends CI_Controller {
         return TRUE;
     }
 
+    public function daftar_laporan() {
+        $this->load->model('Laporan_model');
+        $data['laporan'] = $this->Laporan_model->get_all_laporan();
+        $this->load->view('templates/header');
+        $this->load->view('admin/daftar_laporan', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function detail_laporan($laporan_id) {
+        $this->load->model('Laporan_model');
+        $data['laporan'] = $this->Laporan_model->get_laporan_by_id($laporan_id);
+        if (!$data['laporan']) {
+            $this->session->set_flashdata('error', 'Laporan tidak ditemukan.');
+            redirect('admin/daftar_laporan');
+        }
+        $this->load->view('templates/header');
+        $this->load->view('admin/detail_laporan', $data);
+        $this->load->view('templates/footer');
+    }
+
 }

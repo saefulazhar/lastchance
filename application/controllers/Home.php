@@ -13,9 +13,11 @@ class Home extends CI_Controller {
     $kepribadian = $this->input->get('kepribadian');
 
     $data['kosan'] = $this->Kosan_model->search_kosan($cari, $tipe, $kepribadian);
-    $this->load->view('templates/header');
-    $this->load->view('home/index', $data);
-    $this->load->view('templates/footer');
+    
+        $data['content_view'] = 'home/index';
+        $data['title'] = 'Home - HORIKOS';
+        $this->load->view('templates/header', $data);
+        return;
 }
     public function detail($id) {
         $data['kosan'] = $this->Kosan_model->get_kosan_by_id($id);
@@ -25,21 +27,25 @@ class Home extends CI_Controller {
         $data['fasilitas'] = $this->Kosan_model->get_fasilitas($id);
         $data['foto_kosan'] = $this->Kosan_model->get_foto_kosan($id);
 
-        $this->load->view('templates/header');
-        $this->load->view('home/detail', $data);
-        $this->load->view('templates/footer');
+        $data['content_view'] = 'home/detail'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
+        
     }
 
     public function tentang() {
-        $this->load->view('templates/header');
-        $this->load->view('home/tentang');
-        $this->load->view('templates/footer');
+        $data['content_view'] = 'home/tentang'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function kontak() {
-        $this->load->view('templates/header');
-        $this->load->view('home/kontak');
-        $this->load->view('templates/footer');
+        $data['content_view'] = 'home/kontak'; // View untuk halaman tentang
+        $data['title'] = 'Tentang - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
     }
 
     public function pemesanan($kosan_id) {

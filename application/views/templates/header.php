@@ -3,10 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pencarian kosan</title>
+    <title><?php echo isset($title) ? $title : 'HORIKOS'; ?></title>
     <!-- Bootstrap 5 CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .content-wrapper {
+            display: flex;
+            flex: 1; /* Mengisi ruang sisa di antara header dan footer */
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1; /* Mengisi ruang sisa di samping sidebar */
+            padding: 20px;
+        }
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            .main-content {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -53,3 +94,17 @@
             </div>
         </div>
     </nav>
+
+    <div class="content-wrapper">
+        <?php if (isset($show_sidebar) && $show_sidebar): ?>
+            <?php $this->load->view('templates/sidebar'); ?>
+        <?php endif; ?>
+
+        <div class="main-content">
+            <?php if (isset($content_view)) $this->load->view($content_view, isset($data) ? $data : []); ?>
+        </div>
+    </div>
+
+    <?php $this->load->view('templates/footer'); ?>
+</body>
+</html>

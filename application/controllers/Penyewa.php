@@ -10,6 +10,7 @@ class Penyewa extends CI_Controller {
         $this->load->model('Kosan_model');
         $this->load->model('Sewa_model');
         $this->load->model('Ulasan_model');
+        $this->load->model('Laporan_model');
         $this->load->library('form_validation');
     }
 
@@ -24,9 +25,12 @@ class Penyewa extends CI_Controller {
         // Ambil jumlah ulasan yang sudah diberikan
         $this->db->where('penyewa_id', $penyewa_id);
         $data['ulasan_count'] = $this->db->count_all_results('ulasan');
-        $this->load->view('templates/header');
-        $this->load->view('penyewa/index', $data);
-        $this->load->view('templates/footer');
+        
+        $data['content_view'] = 'penyewa/index';
+        $data['title'] = 'Dashboard Penyewa - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
     }
 
     public function sewa($kosan_id) {
@@ -39,9 +43,10 @@ class Penyewa extends CI_Controller {
         $this->form_validation->set_rules('tanggal_mulai', 'Tanggal Mulai', 'required|callback_valid_date');
 
         if ($this->form_validation->run() === FALSE) {
-            $this->load->view('templates/header');
-            $this->load->view('penyewa/sewa', $data);
-            $this->load->view('templates/footer');
+            $data['content_view'] = 'penyewa/sewa'; // View untuk halaman tentang
+        $data['title'] = 'Sewa Kos - HORIKOS';
+        $data['show_sidebar'] = false;
+        $this->load->view('templates/header', $data);
         } else {
             $durasi = $this->input->post('durasi');
             $tanggal_mulai = $this->input->post('tanggal_mulai');
@@ -92,10 +97,12 @@ class Penyewa extends CI_Controller {
     foreach ($data['sewa_selesai'] as &$sewa) {
         $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
     }
-    $this->load->view('templates/header');
-    $this->load->view('templates/sidebar');
-    $this->load->view('penyewa/my_sewa', $data);
-    $this->load->view('templates/footer');
+    
+        $data['content_view'] = 'penyewa/my_sewa';
+        $data['title'] = 'Riwayat Sewa - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
 }
 
     public function add_ulasan($sewa_id) {
@@ -165,19 +172,89 @@ class Penyewa extends CI_Controller {
     public function riwayat_ulasan() {
         $penyewa_id = $this->session->userdata('user_id');
         $data['riwayat_ulasan'] = $this->Ulasan_model->get_ulasan_by_penyewa($penyewa_id);
-        $this->load->view('templates/header');
-        $this->load->view('templates/sidebar');
-        $this->load->view('penyewa/riwayat_ulasan', $data);
-        $this->load->view('templates/footer');
+        
+        $data['content_view'] = 'penyewa/riwayat_ulasan';
+        $data['title'] = 'Riwayat Ulasan - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
     }
 
-public function laporan() {
-    $penyewa_id = $this->session->userdata('penyewa_id');
-    $data['laporan'] = $this->Sewa_model->get_laporan_by_penyewa($penyewa_id);
-    $this->load->view('templates/header');
-    $this->load->view('templates/sidebar');
-    $this->load->view('penyewa/laporan', $data);
-    $this->load->view('templates/footer');
+    public function buat_laporan($kosan_id = null, $sewa_id = null) {
+    $user_id = $this->session->userdata('user_id');
+    if (!$user_id) {
+        redirect('auth/login');
+    }
+
+    $this->load->model('Laporan_model');
+    $this->load->library('form_validation');
+
+    $this->form_validation->set_rules('judul', 'Judul', 'required');
+    $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'required');
+
+    if ($this->form_validation->run() === FALSE) {
+        $data['selected_kosan_id'] = $kosan_id;
+        $data['selected_sewa_id'] = $sewa_id;
+
+        $this->load->model('Kosan_model');
+        $data['kosan'] = $this->Kosan_model->get_all_kosan();
+
+        $this->load->view('templates/header');
+        $this->load->view('templates/sidebar');
+        $this->load->view('penyewa/buat_laporan', $data);
+        $this->load->view('templates/footer');
+    } else {
+        $data = [
+            'user_id' => $user_id,
+            'kosan_id' => $this->input->post('kosan_id') ?: null,
+            'judul' => $this->input->post('judul'),
+            'deskripsi' => $this->input->post('deskripsi'),
+            'status' => 'Menunggu'
+        ];
+
+        if (!empty($_FILES['lampiran']['name'])) {
+            $config['upload_path'] = './uploads/laporan/';
+            $config['allowed_types'] = 'jpg|jpeg|png';
+            $config['max_size'] = 2048;
+            $config['file_name'] = 'laporan_' . $user_id . '_' . time();
+
+            $this->load->library('upload', $config);
+
+            if ($this->upload->do_upload('lampiran')) {
+                $upload_data = $this->upload->data();
+                $data['lampiran'] = 'uploads/laporan/' . $upload_data['file_name'];
+            } else {
+                $this->session->set_flashdata('error', 'Gagal mengunggah lampiran: ' . $this->upload->display_errors());
+                redirect('penyewa/buat_laporan/' . $kosan_id . '/' . $sewa_id);
+            }
+        }
+
+        if ($this->Laporan_model->insert_laporan($data)) {
+            $this->session->set_flashdata('success', 'Laporan berhasil dikirim.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal mengirim laporan.');
+        }
+        redirect('penyewa/buat_laporan/' . $kosan_id . '/' . $sewa_id);
+    }
+}
+
+public function riwayat_laporan() {
+    $user_id = $this->session->userdata('user_id');
+    if (!$user_id) {
+        redirect('auth/login');
+    }
+
+    $this->load->model('Laporan_model');
+    $data['laporan'] = $this->Laporan_model->get_laporan_by_user_id($user_id);
+
+    
+
+    
+        $data['content_view'] = 'penyewa/riwayat_laporan';
+        $data['title'] = 'Riwayat Laporan - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
 }
 
 public function edit_ulasan($ulasan_id) {
@@ -193,9 +270,12 @@ public function edit_ulasan($ulasan_id) {
     $this->form_validation->set_rules('ulasan', 'Ulasan', 'required');
 
     if ($this->form_validation->run() === FALSE) {
-        $this->load->view('templates/header');
-        $this->load->view('penyewa/edit_ulasan', $data);
-        $this->load->view('templates/footer');
+        
+        $data['content_view'] = 'penyewa/edit_ulasan';
+        $data['title'] = 'Edit Ulasan - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
     } else {
         $update_data = [
             'rating' => $this->input->post('rating'),
@@ -225,9 +305,115 @@ public function profile() {
         redirect('auth/login');
     }
 
-    $this->load->view('templates/header');
-    $this->load->view('templates/sidebar');
-    $this->load->view('penyewa/profile', $data);
-    $this->load->view('templates/footer');
+    
+        $data['content_view'] = 'penyewa/profile';
+        $data['title'] = 'Profil - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
 }
+
+public function edit_profile()
+{
+    $this->load->library('form_validation');
+    $this->load->model('User_model');
+
+    $id_user = $this->session->userdata('user_id');
+    if (!$id_user) {
+        $this->session->set_flashdata('error', 'Anda harus login terlebih dahulu.');
+        redirect('auth/login');
+        return;
+    }
+
+    $user = $this->User_model->get_user_by_id($id_user);
+
+    // Set rules validasi
+    $this->form_validation->set_rules('nama', 'Nama', 'required');
+    $this->form_validation->set_rules('username', 'Username', 'required');
+    $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+    $this->form_validation->set_rules('no_hp', 'Nomor HP', 'numeric|max_length[13]');
+    $this->form_validation->set_rules('password', 'Kata Sandi', 'min_length[8]|matches[password_confirm]', [
+        'matches' => 'Konfirmasi kata sandi tidak cocok.'
+    ]);
+    $this->form_validation->set_rules('password_confirm', 'Konfirmasi Kata Sandi', 'matches[password]');
+
+    if ($this->form_validation->run() === FALSE) {
+       $data['user'] = $user;
+        $data['content_view'] = 'penyewa/edit_profile';
+        $data['title'] = 'Edit Profil - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
+        return;
+    }
+
+    // Ambil input secara selektif
+    $data = [
+        'nama' => $this->input->post('nama'),
+        'username' => $this->input->post('username'),
+        'email' => $this->input->post('email'),
+        'no_hp' => $this->input->post('no_hp') ?: NULL
+    ];
+
+    // Handle password jika diisi
+    $password = $this->input->post('password');
+    if (!empty($password)) {
+        $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    // Cek duplikat username dan email
+    if ($this->User_model->is_username_taken($data['username'], $id_user)) {
+        $this->session->set_flashdata('error', 'Username sudah digunakan oleh pengguna lain.');
+        redirect('penyewa/edit_profile');
+        return;
+    }
+
+    if ($this->User_model->is_email_taken($data['email'], $id_user)) {
+        $this->session->set_flashdata('error', 'Email sudah digunakan oleh pengguna lain.');
+        redirect('penyewa/edit_profile');
+        return;
+    }
+
+    // Handle unggah foto profil
+    $photo_updated = false;
+    if (!empty($_FILES['foto_profil']['name'])) {
+        $config['upload_path'] = './uploads/foto_profil/';
+        $config['allowed_types'] = 'jpg|jpeg|png';
+        $config['max_size'] = 2048; // 2MB
+        $config['file_name'] = 'foto_' . $id_user . '_' . time();
+
+        $this->load->library('upload', $config);
+
+        if ($this->upload->do_upload('foto_profil')) {
+            $upload_data = $this->upload->data();
+            $data['foto_profil'] = $upload_data['file_name'];
+            $photo_updated = true;
+            $old_user = $this->User_model->get_user_by_id($id_user);
+            if ($old_user['foto_profil'] && file_exists('./uploads/foto_profil/' . $old_user['foto_profil'])) {
+                unlink('./uploads/foto_profil/' . $old_user['foto_profil']);
+            }
+        } else {
+            $this->session->set_flashdata('error', 'Gagal mengunggah foto: ' . $this->upload->display_errors());
+            redirect('penyewa/edit_profile');
+            return;
+        }
+    }
+
+    // Mulai transaksi
+    $this->db->trans_start();
+    if ($this->User_model->update_user($id_user, $data)) {
+        $this->db->trans_complete();
+        $this->session->set_flashdata('success', 'Profil berhasil diperbarui.');
+        if ($photo_updated && !$data['foto_profil']) {
+            $this->session->set_flashdata('warning', 'Data profil berhasil diperbarui, tetapi foto gagal diunggah.');
+        }
+    } else {
+        $this->db->trans_rollback();
+        $error = $this->db->error();
+        $this->session->set_flashdata('error', 'Gagal memperbarui profil. Error: ' . $error['message']);
+    }
+
+    redirect('penyewa/edit_profile');
+}
+
+
 }

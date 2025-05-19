@@ -32,7 +32,7 @@
                                     <td><?php echo htmlspecialchars($pem['status']); ?></td>
                                     <td>
                                         <?php if ($pem['status'] === 'menunggu'): ?>
-                                            <a href="<?php echo base_url('penyewa/cancel_pemesanan/' . $pem['id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin membatalkan pemesanan?');">Batalkan</a>
+                                            <a href="<?php echo base_url('penyewa/cancel_pemesanan/' . $pem['id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin membatalkan pemesanan?');">Batalkan</a>                                        
                                         <?php else: ?>
                                             <span class="text-muted">Tidak dapat dibatalkan</span>
                                         <?php endif; ?>
@@ -68,7 +68,7 @@
                                     <td>
                                         <?php if (!$sewa['has_ulasan']): ?>
                                             <a href="<?php echo base_url('penyewa/add_ulasan/' . $sewa['id']); ?>" class="btn btn-primary btn-sm">Beri Ulasan</a>
-                                        <?php else: ?>
+                                            <?php else: ?>
                                             <span class="text-muted">Sudah diulas</span>
                                         <?php endif; ?>
                                     </td>
@@ -114,6 +114,7 @@
                 <?php else: ?>
                     <p class="mt-3">Anda belum memiliki sewa yang selesai.</p>
                 <?php endif; ?>
+                
             </main>
         </div>
     </div>

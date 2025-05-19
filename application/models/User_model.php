@@ -35,4 +35,23 @@ class User_model extends CI_Model {
         $this->db->where('email', $email);
         return $this->db->get('users')->row_array();
     }
+
+    public function is_username_taken($username, $exclude_id = null)
+{
+    $this->db->where('username', $username);
+    if ($exclude_id !== null) {
+        $this->db->where('id !=', $exclude_id);
+    }
+    return $this->db->get('users')->num_rows() > 0;
+}
+
+public function is_email_taken($email, $exclude_id = null)
+{
+    $this->db->where('email', $email);
+    if ($exclude_id !== null) {
+        $this->db->where('id !=', $exclude_id);
+    }
+    return $this->db->get('users')->num_rows() > 0;
+}
+
 }

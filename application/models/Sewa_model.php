@@ -47,12 +47,6 @@ class Sewa_model extends CI_Model {
         return $this->db->get()->result_array();
     }
 
-    public function get_laporan_by_penyewa($penyewa_id) {
-    // $this->db->select('laporan.*, kosan.nama as kosan_nama');
-    $this->db->from('laporan');
-    // $this->db->join('kosan', 'kosan.id = laporan.kosan_id', 'left');
-    $this->db->where('laporan.user_id', $penyewa_id);
-    return $this->db->get()->result_array();
-}
+    
 }
 ?>

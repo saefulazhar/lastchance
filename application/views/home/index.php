@@ -62,6 +62,7 @@
                                 <p class="card-text"><strong>Ulasan Terbaru:</strong> <?php echo htmlspecialchars($k['latest_review']); ?></p>
                             <?php endif; ?>
                             <a href="<?php echo base_url('home/detail/' . $k['id']); ?>" class="btn btn-primary">Lihat Detail</a>
+                            <a href="<?php echo base_url('penyewa/buat_laporan/' . $k['id']); ?>" class="btn btn-danger btn-primary">Laporkan</a>
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,5 @@
 <div class="container mt-4">
+    
     <h1>Profil Penyewa</h1>
     <?php if ($this->session->flashdata('success')): ?>
         <div class="alert alert-success"><?php echo $this->session->flashdata('success'); ?></div>
