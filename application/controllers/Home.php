@@ -87,86 +87,85 @@ class Home extends CI_Controller {
     }
 
     public function filter()
-    {
-        // Ambil parameter dari form filter
-        $kecamatan = $this->input->get('kecamatan');
-        $harga = $this->input->get('harga') ? $this->input->get('harga') : [];
-        $tipe = $this->input->get('tipe') ? $this->input->get('tipe') : [];
-        $kepribadian = $this->input->get('kepribadian') ? $this->input->get('kepribadian') : [];
+{
+    $kecamatan = $this->input->get('kecamatan') ? trim($this->input->get('kecamatan')) : ''; // Tangani null dengan aman
+    $harga = $this->input->get('harga') ? $this->input->get('harga') : [];
+    $tipe = $this->input->get('tipe') ? $this->input->get('tipe') : [];
+    $kepribadian = $this->input->get('kepribadian') ? $this->input->get('kepribadian') : [];
 
-        if (empty($kecamatan)) {
-            $this->session->set_flashdata('error', 'Kecamatan tidak ditemukan.');
-            redirect('home');
-        }
+    // Query dengan filter tambahan
+    $this->db->select('kosan.*');
+    $this->db->from('kosan');
+    $this->db->where('status', 'aktif'); // Hanya kosan aktif
 
-        // Query dengan filter tambahan
-        $this->db->select('kosan.*');
-        $this->db->from('kosan');
-
-        // Filter lokasi (kecamatan, alamat, desa)
+    // Filter lokasi (kecamatan, alamat, desa) hanya jika kecamatan diisi
+    if (!empty($kecamatan)) {
         $this->db->group_start();
-        $this->db->like('kecamatan', $kecamatan, 'both');
-        $this->db->or_like('alamat', $kecamatan, 'both');
-        $this->db->or_like('desa', $kecamatan, 'both');
+        $this->db->like('LOWER(kecamatan)', strtolower($kecamatan), 'both');
+        $this->db->or_like('LOWER(alamat)', strtolower($kecamatan), 'both');
+        $this->db->or_like('LOWER(desa)', strtolower($kecamatan), 'both');
+        $this->db->or_like('LOWER(nama)', strtolower($kecamatan), 'both'); // Pencarian berdasarkan nama
         $this->db->group_end();
-
-        // Filter harga
-        if (!empty($harga)) {
-            $this->db->group_start();
-            $first = true;
-            foreach ($harga as $range) {
-                list($min, $max) = explode('-', $range);
-                if ($first) {
-                    $this->db->where('harga BETWEEN ' . $min . ' AND ' . $max);
-                    $first = false;
-                } else {
-                    $this->db->or_where('harga BETWEEN ' . $min . ' AND ' . $max);
-                }
-            }
-            $this->db->group_end();
-        }
-
-        // Filter tipe (putra, putri, campur)
-        if (!empty($tipe)) {
-            $this->db->group_start();
-            $this->db->where_in('tipe', $tipe);
-            $this->db->group_end();
-        }
-
-        // Filter kepribadian
-        if (!empty($kepribadian)) {
-            $this->db->group_start();
-            $this->db->where_in('kepribadian', $kepribadian);
-            $this->db->group_end();
-        }
-
-        $query = $this->db->get();
-        $kosan_list = $query->result_array();
-
-        // Ambil foto untuk setiap kosan
-        foreach ($kosan_list as &$kosan) {
-            $this->db->select('path');
-            $this->db->from('foto_kosan');
-            $this->db->where('kosan_id', $kosan['id']);
-            $this->db->limit(1);
-            $foto_query = $this->db->get();
-            $foto = $foto_query->row_array();
-            $kosan['foto'] = $foto ? $foto['path'] : null;
-        }
-        unset($kosan);
-
-        // Debugging: Log query untuk memastikan
-        log_message('debug', 'Query filter: ' . $this->db->last_query());
-        log_message('debug', 'Jumlah hasil setelah filter: ' . count($kosan_list));
-
-        // Kirim data ke view
-        $data['kecamatan_searched'] = $kecamatan;
-        $data['kosan_list'] = $kosan_list;
-        $data['content_view'] = 'home/index';
-        $data['title'] = 'Hasil Pencarian - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
     }
+
+    // Filter harga
+    if (!empty($harga)) {
+        $this->db->group_start();
+        $first = true;
+        foreach ($harga as $range) {
+            list($min, $max) = explode('-', $range);
+            if ($first) {
+                $this->db->where('harga BETWEEN ' . $min . ' AND ' . $max);
+                $first = false;
+            } else {
+                $this->db->or_where('harga BETWEEN ' . $min . ' AND ' . $max);
+            }
+        }
+        $this->db->group_end();
+    }
+
+    // Filter tipe
+    if (!empty($tipe)) {
+        $this->db->group_start();
+        $this->db->where_in('LOWER(tipe)', array_map('strtolower', $tipe));
+        $this->db->group_end();
+    }
+
+    // Filter kepribadian
+    if (!empty($kepribadian)) {
+        $this->db->group_start();
+        $this->db->where_in('LOWER(kepribadian)', array_map('strtolower', $kepribadian));
+        $this->db->group_end();
+    }
+
+    $query = $this->db->get();
+    $kosan_list = $query->result_array();
+
+    // Ambil foto untuk setiap kosan
+    foreach ($kosan_list as &$kosan) {
+        $this->db->select('path');
+        $this->db->from('foto_kosan');
+        $this->db->where('kosan_id', $kosan['id']);
+        $this->db->limit(1);
+        $foto_query = $this->db->get();
+        $foto = $foto_query->row_array();
+        $kosan['foto'] = $foto ? $foto['path'] : null;
+    }
+    unset($kosan);
+
+    // Debugging
+    log_message('debug', 'Query filter: ' . $this->db->last_query());
+    log_message('debug', 'Jumlah hasil setelah filter: ' . count($kosan_list));
+
+    // Kirim data ke view
+    $data['kecamatan_searched'] = $kecamatan;
+    $data['kosan_list'] = $kosan_list;
+    $data['is_logged_in'] = $this->session->userdata('role') === 'penyewa' && $this->session->userdata('user_id');
+    $data['content_view'] = 'home/index';
+    $data['title'] = 'Hasil Filter - HORIKOS';
+    $data['show_sidebar'] = false;
+    $this->load->view('templates/header', $data);
+}
     public function detail($id) {
     $data['kosan'] = $this->Kosan_model->get_kosan_by_id($id);
     if (!$data['kosan']) {

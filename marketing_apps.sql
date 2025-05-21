@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 08, 2025 at 04:44 AM
+-- Generation Time: May 21, 2025 at 09:48 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -38,8 +38,9 @@ CREATE TABLE `fasilitas` (
 --
 
 INSERT INTO `fasilitas` (`id`, `nama_fasilitas`, `created_at`) VALUES
-(1, 'Wi-Fi', '2025-05-07 20:59:24'),
-(2, 'AC', '2025-05-07 21:24:43');
+(4, 'Wi-Fi', '2025-05-19 16:56:57'),
+(5, 'Ac', '2025-05-19 20:22:28'),
+(6, 'Dapur', '2025-05-20 20:04:14');
 
 -- --------------------------------------------------------
 
@@ -59,9 +60,7 @@ CREATE TABLE `foto_kosan` (
 --
 
 INSERT INTO `foto_kosan` (`id`, `kosan_id`, `path`, `created_at`) VALUES
-(6, 7, '75993c0c09f1ccb23c8b922e8ac48300.png', '2025-05-07 21:37:08'),
-(7, 7, '66741b3fa7a297bc057144944ca49821.png', '2025-05-07 21:37:08'),
-(8, 7, 'a1ac8d140d27dba4fbb56147b48c49ca.jpg', '2025-05-07 21:37:08');
+(29, 25, '4d08d47e76070cbe7aaae1df72fd2bd3.jpg', '2025-05-21 06:35:48');
 
 -- --------------------------------------------------------
 
@@ -81,7 +80,7 @@ CREATE TABLE `kosan` (
   `deskripsi` text,
   `tipe` enum('putra','putri','campur') NOT NULL,
   `kepribadian` enum('introvert','extrovert','ambivert') NOT NULL,
-  `status` enum('tersedia','disewa') DEFAULT 'tersedia',
+  `status` enum('aktif','menunggu','ditolak') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'menunggu',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `jumlah_kamar` int NOT NULL DEFAULT '0',
   `kamar_tersedia` int NOT NULL DEFAULT '0'
@@ -92,7 +91,7 @@ CREATE TABLE `kosan` (
 --
 
 INSERT INTO `kosan` (`id`, `pemilik_id`, `nama`, `alamat`, `kecamatan`, `desa`, `google_maps_link`, `harga`, `deskripsi`, `tipe`, `kepribadian`, `status`, `created_at`, `jumlah_kamar`, `kamar_tersedia`) VALUES
-(7, 11, 'Kodok Kentung', 'Gunung Myoboku', 'konoha', 'Daun', 'https://maps.app.goo.gl/ytkXCFdhuS9JYbgm8', '700000.00', 'Isinya anak informatika semua', 'putra', '', 'tersedia', '2025-05-07 21:37:08', 0, 0);
+(25, 14, 'fghgfhgfh', 'nbbmbnmn', 'mbnmbmb', 'bnmnbmnbm', '', '33423232.00', 'fgfgfgf', 'putra', 'introvert', 'aktif', '2025-05-21 06:35:48', 12, 11);
 
 -- --------------------------------------------------------
 
@@ -110,8 +109,7 @@ CREATE TABLE `kosan_fasilitas` (
 --
 
 INSERT INTO `kosan_fasilitas` (`kosan_id`, `fasilitas_id`) VALUES
-(7, 1),
-(7, 2);
+(25, 4);
 
 -- --------------------------------------------------------
 
@@ -122,10 +120,13 @@ INSERT INTO `kosan_fasilitas` (`kosan_id`, `fasilitas_id`) VALUES
 CREATE TABLE `laporan` (
   `id` int NOT NULL,
   `user_id` int NOT NULL,
-  `judul` varchar(100) NOT NULL,
+  `kosan_id` int DEFAULT NULL,
+  `judul` varchar(255) NOT NULL,
   `deskripsi` text NOT NULL,
-  `status` enum('baru','diproses','selesai') DEFAULT 'baru',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `lampiran` varchar(255) DEFAULT NULL,
+  `status` enum('Menunggu','Diproses','Selesai') DEFAULT 'Menunggu',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -154,9 +155,16 @@ CREATE TABLE `sewa` (
   `penyewa_id` int NOT NULL,
   `tanggal_mulai` date NOT NULL,
   `tanggal_selesai` date NOT NULL,
-  `status` enum('menunggu','aktif','selesai','ditolak') DEFAULT 'menunggu',
+  `status` enum('menunggu','aktif','selesai','ditolak','dibatalkan') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'menunggu',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `sewa`
+--
+
+INSERT INTO `sewa` (`id`, `kosan_id`, `penyewa_id`, `tanggal_mulai`, `tanggal_selesai`, `status`, `created_at`) VALUES
+(5, 25, 15, '2025-07-01', '2025-07-31', 'aktif', '2025-05-21 10:07:48');
 
 -- --------------------------------------------------------
 
@@ -170,8 +178,16 @@ CREATE TABLE `ulasan` (
   `penyewa_id` int NOT NULL,
   `ulasan` text,
   `rating` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ;
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `sewa_id` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `ulasan`
+--
+
+INSERT INTO `ulasan` (`id`, `kosan_id`, `penyewa_id`, `ulasan`, `rating`, `created_at`, `sewa_id`) VALUES
+(1, 25, 15, 'mantap', 5, '2025-05-21 10:31:48', 5);
 
 -- --------------------------------------------------------
 
@@ -196,9 +212,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `role`, `nama`, `email`, `no_hp`, `foto_profil`, `created_at`) VALUES
-(5, 'admin1', '$2y$10$r0ozFw4jxU5C6p9FO0dGd.xJq3QUpgkeYmz4KACy4zoKM.6Lj1dIa', 'admin', 'Admin', 'adminkos@gmail.com', NULL, NULL, '2025-05-03 07:28:25'),
-(11, 'davina_karamoy', '$2y$10$70SYX0D8y74xudav/LsEAu1NS8SUFz2p3OhYrOZo0KDldtCaT.txG', 'pemilik', 'Davina Karamoy', 'davinakaramoy@gmail.com', '08310873073', 'fcc3f84df9c842f53b4879056ddf7dd8.jpeg', '2025-05-07 13:45:46'),
-(12, 'master_ful', '$2y$10$CQaGVacNpFDjFTrEUXvBaus5Cg9nUWxfhVpC9Kfa/G/fRowDn4nXC', 'penyewa', 'Master Ful', 'masterful@gmail.com', '0880808080', '16ae5fdb9eb33e5ec79d170e67e03c7d.png', '2025-05-07 13:52:06');
+(5, 'admin1', '$2y$10$r0ozFw4jxU5C6p9FO0dGd.xJq3QUpgkeYmz4KACy4zoKM.6Lj1dIa', 'admin', 'Admin', 'adminkos@gmail.com', NULL, 'images1.jpeg', '2025-05-03 07:28:25'),
+(14, 'oiwobo', '$2y$10$.rfiK4mP2dy1PJTw3xyjregoT9fwEBbgAJsB0l8VHRJaMe9JM8306', 'pemilik', 'Firdaus Oiwobo', 'firdausoiwobo@gmail.com', '083208459746', '2ab1120af7482bb8345c0ebc5fe4e967.jpg', '2025-05-20 19:34:55'),
+(15, 'saeful_azhar', '$2y$10$jKbS/RxtH6h2W6wEq/NGduct22GIdWqrr33GOaQ6HUcoSCeq6opPm', 'penyewa', 'King Epul', 'masterful@gmail.com', '085278778787', '9f6cd8bbb58da91c4a49800dcbb06a0e.jpeg', '2025-05-20 22:35:08');
 
 --
 -- Indexes for dumped tables
@@ -236,7 +252,8 @@ ALTER TABLE `kosan_fasilitas`
 --
 ALTER TABLE `laporan`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `kosan_id` (`kosan_id`);
 
 --
 -- Indexes for table `perpanjangan_sewa`
@@ -259,7 +276,8 @@ ALTER TABLE `sewa`
 ALTER TABLE `ulasan`
   ADD PRIMARY KEY (`id`),
   ADD KEY `kosan_id` (`kosan_id`),
-  ADD KEY `penyewa_id` (`penyewa_id`);
+  ADD KEY `penyewa_id` (`penyewa_id`),
+  ADD KEY `fk_sewa_id` (`sewa_id`);
 
 --
 -- Indexes for table `users`
@@ -277,25 +295,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `fasilitas`
 --
 ALTER TABLE `fasilitas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `foto_kosan`
 --
 ALTER TABLE `foto_kosan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `kosan`
 --
 ALTER TABLE `kosan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `laporan`
 --
 ALTER TABLE `laporan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `perpanjangan_sewa`
@@ -307,19 +325,19 @@ ALTER TABLE `perpanjangan_sewa`
 -- AUTO_INCREMENT for table `sewa`
 --
 ALTER TABLE `sewa`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `ulasan`
 --
 ALTER TABLE `ulasan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Constraints for dumped tables
@@ -329,46 +347,48 @@ ALTER TABLE `users`
 -- Constraints for table `foto_kosan`
 --
 ALTER TABLE `foto_kosan`
-  ADD CONSTRAINT `foto_kosan_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`);
+  ADD CONSTRAINT `foto_kosan_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `kosan`
 --
 ALTER TABLE `kosan`
-  ADD CONSTRAINT `kosan_ibfk_1` FOREIGN KEY (`pemilik_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `kosan_ibfk_1` FOREIGN KEY (`pemilik_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `kosan_fasilitas`
 --
 ALTER TABLE `kosan_fasilitas`
-  ADD CONSTRAINT `kosan_fasilitas_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`),
+  ADD CONSTRAINT `kosan_fasilitas_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `kosan_fasilitas_ibfk_2` FOREIGN KEY (`fasilitas_id`) REFERENCES `fasilitas` (`id`);
 
 --
 -- Constraints for table `laporan`
 --
 ALTER TABLE `laporan`
-  ADD CONSTRAINT `laporan_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `laporan_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `laporan_ibfk_2` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `perpanjangan_sewa`
 --
 ALTER TABLE `perpanjangan_sewa`
-  ADD CONSTRAINT `perpanjangan_sewa_ibfk_1` FOREIGN KEY (`sewa_id`) REFERENCES `sewa` (`id`);
+  ADD CONSTRAINT `perpanjangan_sewa_ibfk_1` FOREIGN KEY (`sewa_id`) REFERENCES `sewa` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `sewa`
 --
 ALTER TABLE `sewa`
-  ADD CONSTRAINT `sewa_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`),
-  ADD CONSTRAINT `sewa_ibfk_2` FOREIGN KEY (`penyewa_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `sewa_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `sewa_ibfk_2` FOREIGN KEY (`penyewa_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `ulasan`
 --
 ALTER TABLE `ulasan`
-  ADD CONSTRAINT `ulasan_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`),
-  ADD CONSTRAINT `ulasan_ibfk_2` FOREIGN KEY (`penyewa_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `fk_sewa_id` FOREIGN KEY (`sewa_id`) REFERENCES `sewa` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `ulasan_ibfk_1` FOREIGN KEY (`kosan_id`) REFERENCES `kosan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `ulasan_ibfk_2` FOREIGN KEY (`penyewa_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

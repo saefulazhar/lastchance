@@ -44,11 +44,12 @@ class Kosan_model extends CI_Model {
         return $this->db->get()->result_array();
     }
 
-    public function update_kosan_rating($kosan_id, $rating) {
-        $this->db->set('rating', 'rating + ' . $rating, FALSE);
-        $this->db->where('id', $kosan_id);
-        $this->db->update('kosan');
-    }
+    public function update_kosan_rating($ulasan_id, $rating)
+{
+    $data = ['rating' => $rating]; // Ganti nilai rating dengan nilai baru
+    $this->db->where('id', $ulasan_id);
+    $this->db->update('ulasan', $data);
+}
 
     public function get_average_rating($kosan_id) {
         $this->db->select_avg('rating');

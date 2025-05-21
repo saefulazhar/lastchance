@@ -215,34 +215,34 @@ public function edit_ulasan($ulasan_id) {
 
     public function buat_laporan($kosan_id = null, $sewa_id = null) {
     $user_id = $this->session->userdata('user_id');
-    if (!$user_id) {
+    if (!$user_id || $this->session->userdata('role') !== 'penyewa') {
+        $this->session->set_flashdata('error', 'Anda harus login sebagai penyewa.');
         redirect('auth/login');
     }
 
     $this->load->model('Laporan_model');
+    $this->load->model('Kosan_model');
     $this->load->library('form_validation');
 
     $this->form_validation->set_rules('judul', 'Judul', 'required');
     $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'required');
+    $this->form_validation->set_rules('kosan_id', 'Kosan', 'required|callback_valid_kosan');
 
     if ($this->form_validation->run() === FALSE) {
         $data['selected_kosan_id'] = $kosan_id;
         $data['selected_sewa_id'] = $sewa_id;
-
-        $this->load->model('Kosan_model');
         $data['kosan'] = $this->Kosan_model->get_all_kosan();
 
-        $this->load->view('templates/header');
-        $this->load->view('templates/sidebar');
-        $this->load->view('penyewa/buat_laporan', $data);
-        $this->load->view('templates/footer');
+        $data['content_view'] = 'penyewa/buat_laporan';
+        $data['title'] = 'Buat Laporan - HORIKOS';
+        $data['show_sidebar'] = true;
+        $this->load->view('templates/header', $data);
     } else {
         $data = [
             'user_id' => $user_id,
-            'kosan_id' => $this->input->post('kosan_id') ?: null,
+            'kosan_id' => $this->input->post('kosan_id'),
             'judul' => $this->input->post('judul'),
-            'deskripsi' => $this->input->post('deskripsi'),
-            'status' => 'Menunggu'
+            'deskripsi' => $this->input->post('deskripsi')
         ];
 
         if (!empty($_FILES['lampiran']['name'])) {
@@ -267,27 +267,36 @@ public function edit_ulasan($ulasan_id) {
         } else {
             $this->session->set_flashdata('error', 'Gagal mengirim laporan.');
         }
-        redirect('penyewa/buat_laporan/' . $kosan_id . '/' . $sewa_id);
+        redirect('penyewa/my_sewa'); // Alihkan ke halaman utama setelah submit
     }
+}
+
+public function valid_kosan($kosan_id) {
+    if ($kosan_id) {
+        $this->load->model('Kosan_model');
+        $kosan = $this->Kosan_model->get_kosan_by_id($kosan_id);
+        if ($kosan) {
+            return TRUE;
+        }
+    }
+    $this->form_validation->set_message('valid_kosan', 'Kosan yang dipilih tidak valid.');
+    return FALSE;
 }
 
 public function riwayat_laporan() {
     $user_id = $this->session->userdata('user_id');
-    if (!$user_id) {
+    if (!$user_id || $this->session->userdata('role') !== 'penyewa') {
+        $this->session->set_flashdata('error', 'Anda harus login sebagai penyewa.');
         redirect('auth/login');
     }
 
     $this->load->model('Laporan_model');
     $data['laporan'] = $this->Laporan_model->get_laporan_by_user_id($user_id);
 
-    
-
-    
-        $data['content_view'] = 'penyewa/riwayat_laporan';
-        $data['title'] = 'Riwayat Laporan - HORIKOS';
-        $data['show_sidebar'] = true;
-        $this->load->view('templates/header', $data);
-        return;
+    $data['content_view'] = 'penyewa/riwayat_laporan';
+    $data['title'] = 'Riwayat Laporan - HORIKOS';
+    $data['show_sidebar'] = true;
+    $this->load->view('templates/header', $data);
 }
 
 
