@@ -37,14 +37,17 @@ class Kosan_model extends CI_Model {
 }
 
     public function get_all_kosan() {
-        $this->db->select('kosan.*, GROUP_CONCAT(CONCAT("uploads/kosan/", foto_kosan.path) SEPARATOR ",") as foto_paths');
+        $this->db->select('kosan.*, users.nama as nama_pemilik');
         $this->db->from('kosan');
-        $this->db->join('foto_kosan', 'foto_kosan.kosan_id = kosan.id', 'left');
-        $this->db->group_by('kosan.id');
-        $query = $this->db->get();
-    log_message('debug', 'Query: ' . $this->db->last_query());
-    log_message('debug', 'Result: ' . print_r($query->result_array(), true));
-    return $query->result_array();
+        $this->db->join('users', 'kosan.pemilik_id = users.id', 'left');
+        $this->db->order_by('kosan.id', 'DESC');
+        return $this->db->get()->result_array();
+    }
+
+    public function update_kosan_rating($kosan_id, $rating) {
+        $this->db->set('rating', 'rating + ' . $rating, FALSE);
+        $this->db->where('id', $kosan_id);
+        $this->db->update('kosan');
     }
 
     public function get_average_rating($kosan_id) {
@@ -55,8 +58,11 @@ class Kosan_model extends CI_Model {
     }
 
     public function get_kosan_by_id($id) {
+        $this->db->select('kosan.*, users.nama as nama_pemilik');
+        $this->db->from('kosan');
+        $this->db->join('users', 'kosan.pemilik_id = users.id', 'left');
         $this->db->where('kosan.id', $id);
-        return $this->db->get('kosan')->row_array();
+        return $this->db->get()->row_array();
     }
 
     public function get_fasilitas($id) {
@@ -81,6 +87,15 @@ class Kosan_model extends CI_Model {
         $this->db->join('foto_kosan', 'foto_kosan.kosan_id = kosan.id', 'left');
         $this->db->where('kosan.pemilik_id', $pemilik_id);
         $this->db->group_by('kosan.id');
+        return $this->db->get()->result_array();
+    }
+
+    public function get_kosan_aktif() {
+        $this->db->select('kosan.*, users.nama as nama_pemilik');
+        $this->db->from('kosan');
+        $this->db->join('users', 'kosan.pemilik_id = users.id', 'left');
+        $this->db->where('kosan.status', 'aktif');
+        $this->db->order_by('kosan.id', 'DESC');
         return $this->db->get()->result_array();
     }
 
@@ -134,12 +149,52 @@ class Kosan_model extends CI_Model {
     }
 
     public function delete_kosan($id) {
+        // Pastikan kosan ada sebelum menghapus
+        $kosan = $this->get_kosan_by_id($id);
+        if (!$kosan) {
+            return false;
+        }
+
+        // Hapus file foto dari server
+        $foto_list = $this->get_foto_kosan($id);
+        $upload_path = FCPATH . 'uploads/kosan/';
+        foreach ($foto_list as $foto) {
+            $file_path = $upload_path . basename($foto['path']);
+            if (file_exists($file_path)) {
+                if (!unlink($file_path)) {
+                    log_message('error', 'Gagal menghapus file foto: ' . $file_path);
+                    // Tetap lanjutkan proses meskipun gagal unlink
+                }
+            }
+        }
+
+        // Hapus data dari tabel foto_kosan
         $this->db->where('kosan_id', $id);
         $this->db->delete('foto_kosan');
+        if ($this->db->error()['code'] != 0) {
+            log_message('error', 'Gagal menghapus foto_kosan: ' . json_encode($this->db->error()));
+            return false;
+        }
+
+        // Hapus data dari tabel kosan_fasilitas
         $this->db->where('kosan_id', $id);
         $this->db->delete('kosan_fasilitas');
+        if ($this->db->error()['code'] != 0) {
+            log_message('error', 'Gagal menghapus kosan_fasilitas: ' . json_encode($this->db->error()));
+            return false;
+        }
+
+        // Hapus data dari tabel kosan
         $this->db->where('id', $id);
         $this->db->delete('kosan');
+        if ($this->db->error()['code'] != 0) {
+            log_message('error', 'Gagal menghapus kosan: ' . json_encode($this->db->error()));
+            return false;
+        }
+
+        // Verifikasi apakah kosan benar-benar terhapus
+        $kosan_check = $this->get_kosan_by_id($id);
+        return !$kosan_check; // Return true jika kosan sudah tidak ada
     }
 
     public function insert_pemesanan($data) {
@@ -163,12 +218,14 @@ class Kosan_model extends CI_Model {
     }
 
     public function get_pemesanan_by_penyewa($penyewa_id) {
-        $this->db->select('sewa.*, kosan.nama as nama_kosan, kosan.harga as harga_kosan'); // Tambahkan harga_kosan untuk perhitungan
-        $this->db->from('sewa');
-        $this->db->join('kosan', 'kosan.id = sewa.kosan_id');
-        $this->db->where('sewa.penyewa_id', $penyewa_id);
-        return $this->db->get()->result_array();
-    }
+    $this->db->select('sewa.id, sewa.kosan_id, sewa.penyewa_id, sewa.tanggal_mulai, sewa.tanggal_selesai, sewa.status, sewa.created_at, kosan.nama as nama_kosan, kosan.harga as harga_kosan');
+    $this->db->from('sewa');
+    $this->db->join('kosan', 'kosan.id = sewa.kosan_id');
+    $this->db->where('sewa.penyewa_id', $penyewa_id);
+    $result = $this->db->get()->result_array();
+    log_message('debug', 'Hasil get_pemesanan_by_penyewa: ' . print_r($result, true));
+    return $result;
+}
 
     public function cancel_pemesanan($id, $penyewa_id) {
         $this->db->where('id', $id);
@@ -193,4 +250,11 @@ public function get_laporan_by_penyewa($penyewa_id) {
     $this->db->where('laporan.penyewa_id', $penyewa_id);
     return $this->db->get()->result_array();
 }
+
+public function cek_sewa_aktif_atau_selesai($penyewa_id, $kosan_id) {
+        $this->db->where('penyewa_id', $penyewa_id);
+        $this->db->where('kosan_id', $kosan_id);
+        $this->db->where('status IN ("aktif", "selesai")');
+        return $this->db->get('sewa')->row_array();
+    }
 }

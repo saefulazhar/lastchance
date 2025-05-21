@@ -7,11 +7,11 @@ class Home extends CI_Controller {
         $this->load->model('Kosan_model');
     }
 
-    public function index()
-    {
-        // Ambil semua kosan dari database
+    public function index() {
+        // Ambil semua kosan dengan status aktif dari database menggunakan model
         $this->db->select('kosan.*');
         $this->db->from('kosan');
+        $this->db->where('status', 'aktif');
         $query = $this->db->get();
         $kosan_list = $query->result_array();
 
@@ -28,11 +28,12 @@ class Home extends CI_Controller {
         unset($kosan);
 
         // Debugging: Log query untuk memastikan
-        log_message('debug', 'Query semua kosan: ' . $this->db->last_query());
+        log_message('debug', 'Query semua kosan aktif: ' . $this->db->last_query());
         log_message('debug', 'Jumlah hasil: ' . count($kosan_list));
 
         // Kirim data ke view
         $data['kosan_list'] = $kosan_list;
+        $data['is_logged_in'] = $this->session->userdata('role') === 'penyewa' && $this->session->userdata('user_id');
         $data['content_view'] = 'home/index';
         $data['title'] = 'Cari Kosan - HORIKOS';
         $data['show_sidebar'] = false;
@@ -167,19 +168,31 @@ class Home extends CI_Controller {
         $this->load->view('templates/header', $data);
     }
     public function detail($id) {
-        $data['kosan'] = $this->Kosan_model->get_kosan_by_id($id);
-        if (!$data['kosan']) {
-            show_404();
-        }
-        $data['fasilitas'] = $this->Kosan_model->get_fasilitas($id);
-        $data['foto_kosan'] = $this->Kosan_model->get_foto_kosan($id);
-
-        $data['content_view'] = 'home/detail'; // View untuk halaman tentang
-        $data['title'] = 'Tentang - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
-        
+    $data['kosan'] = $this->Kosan_model->get_kosan_by_id($id);
+    if (!$data['kosan']) {
+        show_404();
     }
+
+    $data['fasilitas'] = $this->Kosan_model->get_fasilitas($id);
+    $data['foto_kosan'] = $this->Kosan_model->get_foto_kosan($id);
+    $data['ulasan_list'] = $this->Kosan_model->get_ulasan_by_kosan($id);
+    $data['rata_rating'] = $this->Kosan_model->get_average_rating($id);
+
+    // Cek apakah pengguna adalah penyewa dengan riwayat sewa aktif/selesai
+    if ($this->session->userdata('role') === 'penyewa') {
+        $penyewa_id = $this->session->userdata('user_id');
+        $data['bisa_ulas'] = $this->Kosan_model->cek_sewa_aktif_atau_selesai($penyewa_id, $id);
+        $data['ulasan_exist'] = $data['bisa_ulas'] ? $this->db->where('sewa_id', $data['bisa_ulas']['id'])->get('ulasan')->row_array() : false;
+    } else {
+        $data['bisa_ulas'] = false;
+        $data['ulasan_exist'] = false;
+    }
+
+    $data['content_view'] = 'home/detail';
+    $data['title'] = 'Detail Kosan: ' . htmlspecialchars($data['kosan']['nama']) . ' - HORIKOS';
+    $data['show_sidebar'] = false;
+    $this->load->view('templates/header', $data);
+}
 
     public function tentang() {
         $data['content_view'] = 'home/tentang'; // View untuk halaman tentang

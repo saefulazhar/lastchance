@@ -5,6 +5,7 @@ class Admin extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('User_model');
+        $this->load->model('Kosan_model');
         if (!$this->session->userdata('logged_in') || $this->session->userdata('role') != 'admin') {
             redirect('auth/login');
         }
@@ -182,6 +183,65 @@ class Admin extends CI_Controller {
         
         $data['show_sidebar'] = false;
         $this->load->view('templates/header', $data);
+    }
+
+    public function daftar_kosan() {
+        $data['kosan_list'] = $this->Kosan_model->get_all_kosan();
+        $data['content_view'] = 'admin/daftar_kosan';
+        $data['title'] = 'Daftar Kosan - HORIKOS';
+        $data['show_sidebar'] = false; // Sesuaikan dengan template Anda
+        $this->load->view('templates/header', $data);
+    }
+
+    public function detail_kosan($id) {
+    $data['kosan'] = $this->Kosan_model->get_kosan_by_id($id);
+    if (!$data['kosan']) {
+        $this->session->set_flashdata('error', 'Kosan tidak ditemukan.');
+        redirect('admin/daftar_kosan');
+    }
+
+    $data['fasilitas'] = $this->Kosan_model->get_fasilitas($id);
+    $data['foto_kosan'] = $this->Kosan_model->get_foto_kosan($id);
+    $data['content_view'] = 'admin/detail_kosan';
+    $data['title'] = 'Detail Kosan: ' . $data['kosan']['nama'] . ' - HORIKOS';
+    $data['show_sidebar'] = false;
+    $this->load->view('templates/header', $data);
+}
+
+public function verifikasi_kosan($id, $action) {
+        $kosan = $this->Kosan_model->get_kosan_by_id($id);
+        if (!$kosan) {
+            $this->session->set_flashdata('error', 'Kosan tidak ditemukan.');
+            redirect('admin/daftar_kosan');
+        }
+
+        if ($action === 'setujui') {
+            $this->Kosan_model->update_kosan($id, ['status' => 'aktif']);
+            $this->session->set_flashdata('success', 'Kosan telah disetujui dan sekarang aktif.');
+        } elseif ($action === 'tolak') {
+            $this->Kosan_model->update_kosan($id, ['status' => 'ditolak']);
+            $this->session->set_flashdata('success', 'Kosan telah ditolak.');
+        } else {
+            $this->session->set_flashdata('error', 'Aksi tidak valid.');
+        }
+
+        redirect('admin/daftar_kosan');
+    }
+
+    public function hapus_kosan($id) {
+        $kosan = $this->Kosan_model->get_kosan_by_id($id);
+        if (!$kosan) {
+            $this->session->set_flashdata('error', 'Kosan tidak ditemukan.');
+            redirect('admin/daftar_kosan');
+        }
+
+        if ($this->Kosan_model->delete_kosan($id)) {
+            $this->session->set_flashdata('success', 'Kosan berhasil dihapus.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal menghapus kosan.');
+        }
+
+        redirect('admin/daftar_kosan');
     }
 
 }

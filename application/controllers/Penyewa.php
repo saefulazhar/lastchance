@@ -105,69 +105,102 @@ class Penyewa extends CI_Controller {
         return;
 }
 
-    public function add_ulasan($sewa_id) {
-        $penyewa_id = $this->session->userdata('user_id');
-        $sewa = $this->Sewa_model->get_sewa_by_id($sewa_id, $penyewa_id);
-
-        if (!$sewa) {
-            $this->session->set_flashdata('error', 'Sewa tidak ditemukan atau Anda tidak memiliki akses.');
-            redirect('penyewa/sewa');
-        }
-
-        // Cek apakah sudah ada ulasan
-        if ($this->Ulasan_model->get_ulasan_by_sewa($sewa_id)) {
-            $this->session->set_flashdata('error', 'Anda sudah memberikan ulasan untuk sewa ini.');
-            redirect('penyewa/sewa');
-        }
-
-        $data['sewa'] = $sewa;
-        $this->load->view('templates/header');
-        $this->load->view('penyewa/add_ulasan', $data);
-        $this->load->view('templates/footer');
+    public function beri_ulasan($kosan_id) {
+    $penyewa_id = $this->session->userdata('user_id');
+    $kosan = $this->Kosan_model->get_kosan_by_id($kosan_id);
+    if (!$kosan) {
+        $this->session->set_flashdata('error', 'Kosan tidak ditemukan.');
+        redirect('home');
     }
 
-    public function save_ulasan() {
-        $penyewa_id = $this->session->userdata('user_id');
-        $sewa_id = $this->input->post('sewa_id');
-        $kosan_id = $this->input->post('kosan_id');
+    // Ambil riwayat sewa aktif atau selesai untuk kosan ini
+    $sewa = $this->Kosan_model->cek_sewa_aktif_atau_selesai($penyewa_id, $kosan_id);
+    if (!$sewa) {
+        $this->session->set_flashdata('error', 'Anda tidak memiliki riwayat sewa aktif atau selesai untuk kosan ini.');
+        redirect('home/detail/' . $kosan_id);
+    }
 
-        // Validasi sewa
-        $sewa = $this->Sewa_model->get_sewa_by_id($sewa_id, $penyewa_id);
-        if (!$sewa) {
-            $this->session->set_flashdata('error', 'Sewa tidak ditemukan atau Anda tidak memiliki akses.');
-            redirect('penyewa/sewa');
-        }
+    // Cek apakah ulasan sudah ada untuk sewa ini dari riwayat
+    $this->db->where('sewa_id', $sewa['id']);
+    $ulasan_exist = $this->db->get('ulasan')->row_array();
+    if ($ulasan_exist) {
+        $this->session->set_flashdata('error', 'Anda sudah memberikan ulasan untuk sewa ini.');
+        redirect('home/detail/' . $kosan_id);
+    }
 
-        // Cek apakah sudah ada ulasan
-        if ($this->Ulasan_model->get_ulasan_by_sewa($sewa_id)) {
-            $this->session->set_flashdata('error', 'Anda sudah memberikan ulasan untuk sewa ini.');
-            redirect('penyewa/sewa');
-        }
+    if ($this->input->post()) {
+        $this->form_validation->set_rules('rating', 'Rating', 'required|numeric|greater_than[0]|less_than_equal_to[5]');
+        $this->form_validation->set_rules('ulasan', 'Ulasan', 'trim');
 
-        // Validasi input
-        $this->form_validation->set_rules('rating', 'Rating', 'required|integer|greater_than[0]|less_than[6]');
-        $this->form_validation->set_rules('ulasan', 'Ulasan', 'required');
-
-        if ($this->form_validation->run() === FALSE) {
-            $data['sewa'] = $sewa;
-            $this->load->view('templates/header');
-            $this->load->view('penyewa/add_ulasan', $data);
-            $this->load->view('templates/footer');
-        } else {
-            $data = [
-                'sewa_id' => $sewa_id,
+        if ($this->form_validation->run() === TRUE) {
+            $data = array(
                 'kosan_id' => $kosan_id,
                 'penyewa_id' => $penyewa_id,
+                'sewa_id' => $sewa['id'],
                 'rating' => $this->input->post('rating'),
                 'ulasan' => $this->input->post('ulasan')
-                
-            ];
+            );
 
-            $this->Ulasan_model->create_ulasan($data);
-            $this->session->set_flashdata('success', 'Ulasan dan rating berhasil disimpan.');
-            redirect('penyewa/my_sewa');
+            if ($this->db->insert('ulasan', $data)) {
+                $rata_rating = $this->Kosan_model->get_average_rating($kosan_id);
+                $this->Kosan_model->update_kosan_rating($kosan_id, $rata_rating);
+                $this->session->set_flashdata('success', 'Ulasan dan rating berhasil ditambahkan.');
+            } else {
+                log_message('error', 'Gagal menyimpan ulasan: ' . json_encode($this->db->error()));
+                $this->session->set_flashdata('error', 'Gagal menambahkan ulasan.');
+            }
+            redirect('home/detail/' . $kosan_id);
         }
     }
+
+    $data['kosan_id'] = $kosan_id;
+    $data['content_view'] = 'penyewa/beri_ulasan';
+    $data['title'] = 'Beri Ulasan - HORIKOS';
+    $data['show_sidebar'] = false;
+    $this->load->view('templates/header', $data);
+}
+
+public function edit_ulasan($ulasan_id) {
+    $penyewa_id = $this->session->userdata('user_id');
+    $this->db->where('id', $ulasan_id);
+    $this->db->where('penyewa_id', $penyewa_id);
+    $ulasan = $this->db->get('ulasan')->row_array();
+
+    if (!$ulasan) {
+        $this->session->set_flashdata('error', 'Ulasan tidak ditemukan atau Anda tidak memiliki akses.');
+        redirect('home');
+    }
+
+    if ($this->input->post()) {
+        $this->form_validation->set_rules('rating', 'Rating', 'required|numeric|greater_than[0]|less_than_equal_to[5]');
+        $this->form_validation->set_rules('ulasan', 'Ulasan', 'trim');
+
+        if ($this->form_validation->run() === TRUE) {
+            $data = array(
+                'rating' => $this->input->post('rating'),
+                'ulasan' => $this->input->post('ulasan')
+            );
+
+            $this->db->where('id', $ulasan_id);
+            if ($this->db->update('ulasan', $data)) {
+                $kosan_id = $ulasan['kosan_id'];
+                $rata_rating = $this->Kosan_model->get_average_rating($kosan_id);
+                $this->Kosan_model->update_kosan_rating($kosan_id, $rata_rating);
+                $this->session->set_flashdata('success', 'Ulasan berhasil diperbarui.');
+            } else {
+                log_message('error', 'Gagal memperbarui ulasan: ' . json_encode($this->db->error()));
+                $this->session->set_flashdata('error', 'Gagal memperbarui ulasan.');
+            }
+            redirect('home/detail/' . ($ulasan['kosan_id'] ?? ''));
+        }
+    }
+
+    $data['ulasan'] = $ulasan;
+    $data['content_view'] = 'penyewa/edit_ulasan';
+    $data['title'] = 'Edit Ulasan - HORIKOS';
+    $data['show_sidebar'] = false;
+    $this->load->view('templates/header', $data);
+}
 
     public function riwayat_ulasan() {
         $penyewa_id = $this->session->userdata('user_id');
@@ -257,39 +290,7 @@ public function riwayat_laporan() {
         return;
 }
 
-public function edit_ulasan($ulasan_id) {
-    $penyewa_id = $this->session->userdata('user_id');
-    $data['ulasan'] = $this->Ulasan_model->get_ulasan_by_id($ulasan_id, $penyewa_id);
 
-    if (!$data['ulasan']) {
-        $this->session->set_flashdata('error', 'Ulasan tidak ditemukan atau Anda tidak memiliki akses.');
-        redirect('penyewa/riwayat_ulasan');
-    }
-
-    $this->form_validation->set_rules('rating', 'Rating', 'required|integer|greater_than[0]|less_than[6]');
-    $this->form_validation->set_rules('ulasan', 'Ulasan', 'required');
-
-    if ($this->form_validation->run() === FALSE) {
-        
-        $data['content_view'] = 'penyewa/edit_ulasan';
-        $data['title'] = 'Edit Ulasan - HORIKOS';
-        $data['show_sidebar'] = true;
-        $this->load->view('templates/header', $data);
-        return;
-    } else {
-        $update_data = [
-            'rating' => $this->input->post('rating'),
-            'ulasan' => $this->input->post('ulasan')
-        ];
-
-        if ($this->Ulasan_model->update_ulasan($ulasan_id, $update_data)) {
-            $this->session->set_flashdata('success', 'Ulasan berhasil diperbarui.');
-        } else {
-            $this->session->set_flashdata('error', 'Gagal memperbarui ulasan.');
-        }
-        redirect('penyewa/riwayat_ulasan');
-    }
-}
 
 public function profile() {
     $user_id = $this->session->userdata('user_id');

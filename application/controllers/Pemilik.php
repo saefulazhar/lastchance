@@ -28,6 +28,7 @@ class Pemilik extends CI_Controller {
         return;
     }
 
+
     public function tambah_kosan() {
         $this->form_validation->set_rules('nama', 'Nama Kosan', 'required');
         $this->form_validation->set_rules('alamat', 'Alamat', 'required');
@@ -35,17 +36,18 @@ class Pemilik extends CI_Controller {
         $this->form_validation->set_rules('desa', 'Desa', 'required');
         $this->form_validation->set_rules('harga', 'Harga', 'required|numeric');
         $this->form_validation->set_rules('tipe', 'Tipe', 'required|in_list[putra,putri,campur]');
-        $this->form_validation->set_rules('kepribadian', 'Kepribadian', 'required|in_list[introvert,ekstrovert]');
+        $this->form_validation->set_rules('kepribadian', 'Kepribadian', 'required|in_list[introvert,extrovert,ambivert]');
         $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
         $this->form_validation->set_rules('google_maps_link', 'Google Maps Link', 'trim|valid_url');
         $this->form_validation->set_rules('fasilitas[]', 'Fasilitas', 'trim');
+        $this->form_validation->set_rules('jumlah_kamar', 'Jumlah Kamar', 'required|numeric|greater_than[0]');
+        $this->form_validation->set_rules('kamar_tersedia', 'Kamar Tersedia', 'required|numeric|greater_than_equal_to[0]|callback_check_kamar_tersedia');
 
         if ($this->form_validation->run() === FALSE) {
             $data['content_view'] = 'pemilik/tambah_kosan';
-        $data['title'] = 'Tambah Kosan - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
-        
+            $data['title'] = 'Tambah Kosan - HORIKOS';
+            $data['show_sidebar'] = false;
+            $this->load->view('templates/header', $data);
         } else {
             $upload_path = FCPATH . 'uploads/kosan/';
             if (!is_dir($upload_path)) {
@@ -56,15 +58,15 @@ class Pemilik extends CI_Controller {
             if (!is_writable($upload_path)) {
                 $this->session->set_flashdata('error', 'Direktori upload tidak dapat ditulis. Periksa izin folder: ' . $upload_path);
                 $data['content_view'] = 'pemilik/tambah_kosan';
-        $data['title'] = 'Tambah Kosan - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
+                $data['title'] = 'Tambah Kosan - HORIKOS';
+                $data['show_sidebar'] = false;
+                $this->load->view('templates/header', $data);
                 return;
             }
 
             $config['upload_path'] = $upload_path;
             $config['allowed_types'] = 'jpg|png|jpeg';
-            $config['max_size'] = 2048; // 2MB
+            $config['max_size'] = 2048;
             $config['encrypt_name'] = TRUE;
             $config['file_ext_tolower'] = TRUE;
 
@@ -87,10 +89,10 @@ class Pemilik extends CI_Controller {
                             $foto_paths[] = $upload_data['file_name'];
                         } else {
                             $this->session->set_flashdata('error', 'Gagal upload foto: ' . $this->upload->display_errors());
-        $data['content_view'] = 'pemilik/tambah_kosan';
-        $data['title'] = 'Tambah Kosan - HORIKOS';
-        $data['show_sidebar'] = true;
-        $this->load->view('templates/header', $data);
+                            $data['content_view'] = 'pemilik/tambah_kosan';
+                            $data['title'] = 'Tambah Kosan - HORIKOS';
+                            $data['show_sidebar'] = true;
+                            $this->load->view('templates/header', $data);
                             return;
                         }
                     }
@@ -107,7 +109,10 @@ class Pemilik extends CI_Controller {
                 'kepribadian' => $this->input->post('kepribadian'),
                 'deskripsi' => $this->input->post('deskripsi'),
                 'google_maps_link' => $this->input->post('google_maps_link'),
-                'pemilik_id' => $this->session->userdata('user_id')
+                'pemilik_id' => $this->session->userdata('user_id'),
+                'jumlah_kamar' => $this->input->post('jumlah_kamar'),
+                'kamar_tersedia' => $this->input->post('kamar_tersedia'),
+                'status' => 'menunggu' // Status default saat menambah kosan
             );
 
             $kosan_id = $this->Kosan_model->insert_kosan($data);
@@ -127,7 +132,7 @@ class Pemilik extends CI_Controller {
                 }
             }
 
-            $this->session->set_flashdata('success', 'Kosan berhasil ditambahkan.');
+            $this->session->set_flashdata('success', 'Kosan berhasil ditambahkan dan menunggu verifikasi admin.');
             redirect('pemilik');
         }
     }
@@ -147,16 +152,18 @@ class Pemilik extends CI_Controller {
         $this->form_validation->set_rules('desa', 'Desa', 'required');
         $this->form_validation->set_rules('harga', 'Harga', 'required|numeric');
         $this->form_validation->set_rules('tipe', 'Tipe', 'required|in_list[putra,putri,campur]');
-        $this->form_validation->set_rules('kepribadian', 'Kepribadian', 'required|in_list[introvert,ekstrovert]');
+        $this->form_validation->set_rules('kepribadian', 'Kepribadian', 'required|in_list[introvert,extrovert,ambivert]');
         $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'trim');
         $this->form_validation->set_rules('google_maps_link', 'Google Maps Link', 'trim|valid_url');
         $this->form_validation->set_rules('fasilitas[]', 'Fasilitas', 'trim');
+        $this->form_validation->set_rules('jumlah_kamar', 'Jumlah Kamar', 'required|numeric|greater_than[0]');
+        $this->form_validation->set_rules('kamar_tersedia', 'Kamar Tersedia', 'required|numeric|greater_than_equal_to[0]|callback_check_kamar_tersedia');
 
         if ($this->form_validation->run() === FALSE) {
             $data['content_view'] = 'pemilik/edit_kosan';
-        $data['title'] = 'Edit Kosan - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
+            $data['title'] = 'Edit Kosan - HORIKOS';
+            $data['show_sidebar'] = false;
+            $this->load->view('templates/header', $data);
         } else {
             $upload_path = FCPATH . 'uploads/kosan/';
             if (!is_dir($upload_path)) {
@@ -167,15 +174,15 @@ class Pemilik extends CI_Controller {
             if (!is_writable($upload_path)) {
                 $this->session->set_flashdata('error', 'Direktori upload tidak dapat ditulis. Periksa izin folder: ' . $upload_path);
                 $data['content_view'] = 'pemilik/edit_kosan';
-        $data['title'] = 'Edit Kosan - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
+                $data['title'] = 'Edit Kosan - HORIKOS';
+                $data['show_sidebar'] = false;
+                $this->load->view('templates/header', $data);
                 return;
             }
 
             $config['upload_path'] = $upload_path;
             $config['allowed_types'] = 'jpg|png|jpeg';
-            $config['max_size'] = 2048; // 2MB
+            $config['max_size'] = 2048;
             $config['encrypt_name'] = TRUE;
             $config['file_ext_tolower'] = TRUE;
 
@@ -199,15 +206,14 @@ class Pemilik extends CI_Controller {
                         } else {
                             $this->session->set_flashdata('error', 'Gagal upload foto: ' . $this->upload->display_errors());
                             $data['content_view'] = 'pemilik/edit_kosan';
-        $data['title'] = 'Edit Kosan - HORIKOS';
-        $data['show_sidebar'] = false;
-        $this->load->view('templates/header', $data);
+                            $data['title'] = 'Edit Kosan - HORIKOS';
+                            $data['show_sidebar'] = false;
+                            $this->load->view('templates/header', $data);
                             return;
                         }
                     }
                 }
 
-                // Hapus foto lama
                 foreach ($data['foto_kosan'] as $foto) {
                     $file_path = FCPATH . 'uploads/kosan/' . basename($foto['path']);
                     if (file_exists($file_path)) {
@@ -226,7 +232,10 @@ class Pemilik extends CI_Controller {
                 'tipe' => $this->input->post('tipe'),
                 'kepribadian' => $this->input->post('kepribadian'),
                 'deskripsi' => $this->input->post('deskripsi'),
-                'google_maps_link' => $this->input->post('google_maps_link')
+                'google_maps_link' => $this->input->post('google_maps_link'),
+                'jumlah_kamar' => $this->input->post('jumlah_kamar'),
+                'kamar_tersedia' => $this->input->post('kamar_tersedia'),
+                'status' => 'menunggu' // Reset status ke menunggu saat diedit
             );
 
             $this->Kosan_model->update_kosan($id, $data_kosan);
@@ -247,10 +256,20 @@ class Pemilik extends CI_Controller {
                 }
             }
 
-            $this->session->set_flashdata('success', 'Kosan berhasil diperbarui.');
+            $this->session->set_flashdata('success', 'Kosan berhasil diperbarui dan menunggu verifikasi admin.');
             redirect('pemilik');
         }
     }
+
+// Callback untuk memeriksa kamar tersedia
+public function check_kamar_tersedia($str) {
+    $jumlah_kamar = $this->input->post('jumlah_kamar');
+    if ($this->input->post('kamar_tersedia') > $jumlah_kamar) {
+        $this->form_validation->set_message('check_kamar_tersedia', 'Kamar tersedia tidak boleh melebihi jumlah kamar.');
+        return FALSE;
+    }
+    return TRUE;
+}
 
     public function hapus_kosan($id) {
         $kosan = $this->Kosan_model->get_kosan_by_id($id);
@@ -281,7 +300,7 @@ class Pemilik extends CI_Controller {
     }
 
     public function terima_sewa($id) {
-        $this->Kosan_model->update_pemesanan_status($id, 'diterima');
+        $this->Kosan_model->update_pemesanan_status($id, 'aktif');
         $this->session->set_flashdata('success', 'Pemesanan berhasil diterima.');
         redirect('pemilik/sewa');
     }
