@@ -68,8 +68,11 @@
                             <td>
                                 <?php if (!$sewa['has_ulasan']): ?>
                                     <a href="<?php echo base_url('penyewa/beri_ulasan/' . $sewa['kosan_id']); ?>" class="btn btn-primary btn-sm">Beri Ulasan</a>
+                                <?php endif; ?>
+                                <?php if ($sewa['can_report']): ?>
+                                    <a href="<?php echo base_url('penyewa/buat_laporan/' . $sewa['kosan_id']); ?>" class="btn btn-warning btn-sm mt-2">Laporkan</a>
                                 <?php else: ?>
-                                    <span class="text-muted">Sudah diulas</span>
+                                    <span class="text-muted mt-2 d-block">Anda sudah melaporkan kosan ini. Tunggu hingga <?php echo htmlspecialchars($sewa['next_report_date']); ?> untuk melaporkan lagi.</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -103,9 +106,11 @@
                             <td>
                                 <?php if (!$sewa['has_ulasan']): ?>
                                     <a href="<?php echo base_url('penyewa/beri_ulasan/' . $sewa['kosan_id']); ?>" class="btn btn-primary btn-sm">Beri Ulasan</a>
+                                <?php endif; ?>
+                                <?php if ($sewa['can_report']): ?>
+                                    <a href="<?php echo base_url('penyewa/buat_laporan/' . $sewa['kosan_id']); ?>" class="btn btn-warning btn-sm mt-2">Laporkan</a>
                                 <?php else: ?>
-                                    
-                                    <span class="text-muted">Sudah diulas</span>
+                                    <span class="text-muted mt-2 d-block">Anda sudah melaporkan kosan ini. Tunggu hingga <?php echo htmlspecialchars($sewa['next_report_date']); ?> untuk melaporkan lagi.</span>
                                 <?php endif; ?>
                             </td>
                         </tr>

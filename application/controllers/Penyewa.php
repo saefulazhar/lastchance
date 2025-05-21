@@ -86,77 +86,70 @@ class Penyewa extends CI_Controller {
         redirect('penyewa');
     }
 
-    public function my_sewa() {
+    public function my_sewa()
+{
     $penyewa_id = $this->session->userdata('user_id');
-    $data['menunggu'] = $this->Sewa_model->get_sewa_menunggu_by_penyewa($penyewa_id); // Harus difilter 'menunggu' di Kosan_model
+    $data['menunggu'] = $this->Sewa_model->get_sewa_menunggu_by_penyewa($penyewa_id);
     $data['sewa_aktif'] = $this->Sewa_model->get_sewa_aktif_by_penyewa($penyewa_id);
     $data['sewa_selesai'] = $this->Sewa_model->get_sewa_selesai_by_penyewa($penyewa_id);
+
+    // Tambahkan has_ulasan dan batasan laporan untuk sewa aktif
     foreach ($data['sewa_aktif'] as &$sewa) {
         $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
-    }
-    foreach ($data['sewa_selesai'] as &$sewa) {
-        $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
-    }
-    
-        $data['content_view'] = 'penyewa/my_sewa';
-        $data['title'] = 'Riwayat Sewa - HORIKOS';
-        $data['show_sidebar'] = true;
-        $this->load->view('templates/header', $data);
-        return;
-}
 
-    public function beri_ulasan($kosan_id) {
-    $penyewa_id = $this->session->userdata('user_id');
-    $kosan = $this->Kosan_model->get_kosan_by_id($kosan_id);
-    if (!$kosan) {
-        $this->session->set_flashdata('error', 'Kosan tidak ditemukan.');
-        redirect('home');
-    }
+        // Periksa batasan laporan
+        $this->db->select('created_at');
+        $this->db->where('kosan_id', $sewa['kosan_id']);
+        $this->db->where('user_id', $penyewa_id); // Diubah dari 'penyewa_id' ke 'user_id'
+        $this->db->order_by('created_at', 'DESC');
+        $this->db->limit(1);
+        $laporan = $this->db->get('laporan')->row_array();
 
-    // Ambil riwayat sewa aktif atau selesai untuk kosan ini
-    $sewa = $this->Kosan_model->cek_sewa_aktif_atau_selesai($penyewa_id, $kosan_id);
-    if (!$sewa) {
-        $this->session->set_flashdata('error', 'Anda tidak memiliki riwayat sewa aktif atau selesai untuk kosan ini.');
-        redirect('home/detail/' . $kosan_id);
-    }
-
-    // Cek apakah ulasan sudah ada untuk sewa ini dari riwayat
-    $this->db->where('sewa_id', $sewa['id']);
-    $ulasan_exist = $this->db->get('ulasan')->row_array();
-    if ($ulasan_exist) {
-        $this->session->set_flashdata('error', 'Anda sudah memberikan ulasan untuk sewa ini.');
-        redirect('home/detail/' . $kosan_id);
-    }
-
-    if ($this->input->post()) {
-        $this->form_validation->set_rules('rating', 'Rating', 'required|numeric|greater_than[0]|less_than_equal_to[5]');
-        $this->form_validation->set_rules('ulasan', 'Ulasan', 'trim');
-
-        if ($this->form_validation->run() === TRUE) {
-            $data = array(
-                'kosan_id' => $kosan_id,
-                'penyewa_id' => $penyewa_id,
-                'sewa_id' => $sewa['id'],
-                'rating' => $this->input->post('rating'),
-                'ulasan' => $this->input->post('ulasan')
-            );
-
-            if ($this->db->insert('ulasan', $data)) {
-                $rata_rating = $this->Kosan_model->get_average_rating($kosan_id);
-                $this->Kosan_model->update_kosan_rating($kosan_id, $rata_rating);
-                $this->session->set_flashdata('success', 'Ulasan dan rating berhasil ditambahkan.');
+        if ($laporan) {
+            $last_report_date = strtotime($laporan['created_at']);
+            $days_since_last_report = (time() - $last_report_date) / (60 * 60 * 24); // Selisih hari
+            if ($days_since_last_report < 30) {
+                $sewa['can_report'] = false;
+                $sewa['next_report_date'] = date('d-m-Y', strtotime($laporan['created_at'] . ' +30 days'));
             } else {
-                log_message('error', 'Gagal menyimpan ulasan: ' . json_encode($this->db->error()));
-                $this->session->set_flashdata('error', 'Gagal menambahkan ulasan.');
+                $sewa['can_report'] = true;
             }
-            redirect('home/detail/' . $kosan_id);
+        } else {
+            $sewa['can_report'] = true;
         }
     }
+    unset($sewa);
 
-    $data['kosan_id'] = $kosan_id;
-    $data['content_view'] = 'penyewa/beri_ulasan';
-    $data['title'] = 'Beri Ulasan - HORIKOS';
-    $data['show_sidebar'] = false;
+    // Tambahkan has_ulasan dan batasan laporan untuk sewa selesai
+    foreach ($data['sewa_selesai'] as &$sewa) {
+        $sewa['has_ulasan'] = $this->Ulasan_model->get_ulasan_by_sewa($sewa['id']) ? true : false;
+
+        // Periksa batasan laporan
+        $this->db->select('created_at');
+        $this->db->where('kosan_id', $sewa['kosan_id']);
+        $this->db->where('user_id', $penyewa_id); // Diubah dari 'penyewa_id' ke 'user_id'
+        $this->db->order_by('created_at', 'DESC');
+        $this->db->limit(1);
+        $laporan = $this->db->get('laporan')->row_array();
+
+        if ($laporan) {
+            $last_report_date = strtotime($laporan['created_at']);
+            $days_since_last_report = (time() - $last_report_date) / (60 * 60 * 24); // Selisih hari
+            if ($days_since_last_report < 30) {
+                $sewa['can_report'] = false;
+                $sewa['next_report_date'] = date('d-m-Y', strtotime($laporan['created_at'] . ' +30 days'));
+            } else {
+                $sewa['can_report'] = true;
+            }
+        } else {
+            $sewa['can_report'] = true;
+        }
+    }
+    unset($sewa);
+
+    $data['content_view'] = 'penyewa/my_sewa';
+    $data['title'] = 'Riwayat Sewa - HORIKOS';
+    $data['show_sidebar'] = true;
     $this->load->view('templates/header', $data);
 }
 
@@ -213,62 +206,85 @@ public function edit_ulasan($ulasan_id) {
         return;
     }
 
-    public function buat_laporan($kosan_id = null, $sewa_id = null) {
-    $user_id = $this->session->userdata('user_id');
-    if (!$user_id || $this->session->userdata('role') !== 'penyewa') {
-        $this->session->set_flashdata('error', 'Anda harus login sebagai penyewa.');
-        redirect('auth/login');
+   public function buat_laporan($kosan_id = null)
+{
+    $penyewa_id = $this->session->userdata('user_id');
+
+    // Periksa apakah kosan ada
+    $kosan = $this->Kosan_model->get_kosan_by_id($kosan_id);
+    if (!$kosan) {
+        $this->session->set_flashdata('error', 'Kosan tidak ditemukan.');
+        redirect('penyewa/my_sewa');
     }
 
-    $this->load->model('Laporan_model');
-    $this->load->model('Kosan_model');
-    $this->load->library('form_validation');
+    // Periksa batasan laporan (1 laporan per 30 hari per kosan)
+    $this->db->select('created_at');
+    $this->db->where('kosan_id', $kosan_id);
+    $this->db->where('user_id', $penyewa_id);
+    $this->db->order_by('created_at', 'DESC');
+    $this->db->limit(1);
+    $laporan = $this->db->get('laporan')->row_array();
 
-    $this->form_validation->set_rules('judul', 'Judul', 'required');
-    $this->form_validation->set_rules('deskripsi', 'Deskripsi', 'required');
-    $this->form_validation->set_rules('kosan_id', 'Kosan', 'required|callback_valid_kosan');
+    if ($laporan) {
+        $last_report_date = strtotime($laporan['created_at']);
+        $days_since_last_report = (time() - $last_report_date) / (60 * 60 * 24);
+        if ($days_since_last_report < 30) {
+            $this->session->set_flashdata('error', 'Anda sudah melaporkan kosan ini. Tunggu hingga ' . date('d-m-Y', strtotime($laporan['created_at'] . ' +30 days')) . ' untuk melaporkan lagi.');
+            redirect('penyewa/my_sewa');
+        }
+    }
 
-    if ($this->form_validation->run() === FALSE) {
-        $data['selected_kosan_id'] = $kosan_id;
-        $data['selected_sewa_id'] = $sewa_id;
-        $data['kosan'] = $this->Kosan_model->get_all_kosan();
+    // Proses pembuatan laporan
+    if ($this->input->post()) {
+        $this->form_validation->set_rules('judul', 'Judul Laporan', 'required|trim');
+        $this->form_validation->set_rules('deskripsi', 'Deskripsi Laporan', 'required|trim');
 
-        $data['content_view'] = 'penyewa/buat_laporan';
-        $data['title'] = 'Buat Laporan - HORIKOS';
-        $data['show_sidebar'] = true;
-        $this->load->view('templates/header', $data);
-    } else {
-        $data = [
-            'user_id' => $user_id,
-            'kosan_id' => $this->input->post('kosan_id'),
-            'judul' => $this->input->post('judul'),
-            'deskripsi' => $this->input->post('deskripsi')
-        ];
+        if ($this->form_validation->run() === TRUE) {
+            // Konfigurasi upload gambar
+            $lampiran_path = null;
+            if (!empty($_FILES['lampiran']['name'])) {
+                $config['upload_path'] = './uploads/laporan/';
+                $config['allowed_types'] = 'jpg|jpeg|png|gif';
+                $config['max_size'] = 2048; // 2MB
+                $config['file_name'] = 'laporan_' . $penyewa_id . '_' . time();
 
-        if (!empty($_FILES['lampiran']['name'])) {
-            $config['upload_path'] = './uploads/laporan/';
-            $config['allowed_types'] = 'jpg|jpeg|png';
-            $config['max_size'] = 2048;
-            $config['file_name'] = 'laporan_' . $user_id . '_' . time();
+                $this->load->library('upload', $config);
 
-            $this->load->library('upload', $config);
+                if ($this->upload->do_upload('lampiran')) {
+                    $upload_data = $this->upload->data();
+                    $lampiran_path = 'uploads/laporan/' . $upload_data['file_name'];
+                } else {
+                    $this->session->set_flashdata('error', 'Gagal mengunggah lampiran: ' . $this->upload->display_errors());
+                    redirect('penyewa/buat_laporan/' . $kosan_id);
+                }
+            }
 
-            if ($this->upload->do_upload('lampiran')) {
-                $upload_data = $this->upload->data();
-                $data['lampiran'] = 'uploads/laporan/' . $upload_data['file_name'];
+            // Simpan data laporan
+            $data = [
+                'kosan_id' => $kosan_id,
+                'user_id' => $penyewa_id,
+                'judul' => $this->input->post('judul'),
+                'deskripsi' => $this->input->post('deskripsi'),
+                'lampiran' => $lampiran_path,
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            if ($this->db->insert('laporan', $data)) {
+                $this->session->set_flashdata('success', 'Laporan berhasil dikirim.');
+                redirect('penyewa/riwayat_laporan');
             } else {
-                $this->session->set_flashdata('error', 'Gagal mengunggah lampiran: ' . $this->upload->display_errors());
-                redirect('penyewa/buat_laporan/' . $kosan_id . '/' . $sewa_id);
+                log_message('error', 'Gagal menyimpan laporan: ' . json_encode($this->db->error()));
+                $this->session->set_flashdata('error', 'Gagal mengirim laporan.');
+                redirect('penyewa/buat_laporan/' . $kosan_id);
             }
         }
-
-        if ($this->Laporan_model->insert_laporan($data)) {
-            $this->session->set_flashdata('success', 'Laporan berhasil dikirim.');
-        } else {
-            $this->session->set_flashdata('error', 'Gagal mengirim laporan.');
-        }
-        redirect('penyewa/my_sewa'); // Alihkan ke halaman utama setelah submit
     }
+
+    $data['selected_kosan_id'] = $kosan_id;
+    $data['content_view'] = 'penyewa/buat_laporan';
+    $data['title'] = 'Buat Laporan - HORIKOS';
+    $data['show_sidebar'] = false;
+    $this->load->view('templates/header', $data);
 }
 
 public function valid_kosan($kosan_id) {
