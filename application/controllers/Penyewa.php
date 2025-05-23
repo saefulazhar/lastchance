@@ -153,6 +153,52 @@ class Penyewa extends CI_Controller {
     $this->load->view('templates/header', $data);
 }
 
+public function beri_ulasan($kosan_id) {
+    $penyewa_id = $this->session->userdata('user_id');
+    
+    // Validasi apakah pengguna sudah login
+    if (!$penyewa_id) {
+        $this->session->set_flashdata('error', 'Silakan login terlebih dahulu.');
+        redirect('login');
+    }
+
+    // Validasi apakah kosan_id valid
+    if (!$kosan_id) {
+        $this->session->set_flashdata('error', 'ID Kosan tidak valid.');
+        redirect('home');
+    }
+
+    $this->form_validation->set_rules('rating', 'Rating', 'required|numeric|greater_than[0]|less_than_equal_to[5]');
+    $this->form_validation->set_rules('ulasan', 'Ulasan', 'trim');
+
+    if ($this->form_validation->run() === TRUE) {
+        $data = array(
+            'kosan_id' => $kosan_id,
+            'penyewa_id' => $penyewa_id,
+            'rating' => $this->input->post('rating'),
+            'ulasan' => $this->input->post('ulasan')
+        );
+
+        if ($this->Ulasan_model->insert_ulasan($data)) {
+            // Update rating rata-rata di tabel kosan
+            $rata_rating = $this->Kosan_model->get_average_rating($kosan_id);
+            $this->Kosan_model->update_kosan_rating($kosan_id, $rata_rating);
+            $this->session->set_flashdata('success', 'Ulasan berhasil ditambahkan.');
+        } else {
+            log_message('error', 'Gagal menambahkan ulasan: ' . json_encode($this->db->error()));
+            $this->session->set_flashdata('error', 'Gagal menambahkan ulasan.');
+        }
+        redirect('home/detail/' . $kosan_id);
+    }
+
+    // Jika form tidak valid, tampilkan form ulasan
+    $data['content_view'] = 'penyewa/beri_ulasan';
+    $data['title'] = 'Beri Ulasan - HORIKOS';
+    $data['show_sidebar'] = false;
+    $data['kosan_id'] = $kosan_id; // Tambahkan ini
+    $this->load->view('templates/header', $data);
+}
+
 public function edit_ulasan($ulasan_id) {
     $penyewa_id = $this->session->userdata('user_id');
     $this->db->where('id', $ulasan_id);
