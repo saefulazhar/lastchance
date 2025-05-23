@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kosan Finder</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
+            --primary-color: #800000; /* Maroon utama */
+            --primary-color-dark: #a52a2a; /* Maroon untuk hover */
             --secondary-color: #64748b;
-            --success-color: #10b981;
+            --success-color: #22c55e;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
             --light-gray: #f8fafc;
@@ -20,7 +21,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f6f9; /* Konsisten dengan desain sebelumnya */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             padding: 2rem 0;
@@ -28,7 +29,7 @@
 
         .main-container {
             background: white;
-            border-radius: 20px;
+            border-radius: 15px;
             box-shadow: var(--shadow-lg);
             overflow: hidden;
             margin: 0 auto;
@@ -36,7 +37,7 @@
         }
 
         .header-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             color: white;
             padding: 2rem;
             text-align: center;
@@ -46,7 +47,6 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .header-section p {
@@ -77,42 +77,53 @@
         }
 
         .form-control, .btn {
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
         }
 
         .btn {
             font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             padding: 0.75rem 1.5rem;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             border: none;
             box-shadow: var(--shadow);
         }
 
         .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-color-dark) 0%, var(--primary-color) 100%);
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            background: linear-gradient(135deg, var(--success-color) 0%, #16a34a 100%);
             border: none;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .btn-warning {
             background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
             border: none;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .filter-section {
@@ -147,7 +158,7 @@
         }
 
         .form-check:hover {
-            background-color: rgba(37, 99, 235, 0.05);
+            background-color: rgba(128, 0, 0, 0.05);
         }
 
         .form-check-input:checked {
@@ -169,7 +180,6 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
-            height: fit-content;
         }
 
         .kosan-card:hover {
@@ -198,7 +208,7 @@
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            background: linear-gradient(135deg, var(--success-color) 0%, #16a34a 100%);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 25px;
@@ -252,7 +262,7 @@
 
         .personality-tag {
             display: inline-block;
-            background: rgba(37, 99, 235, 0.1);
+            background: rgba(128, 0, 0, 0.1);
             color: var(--primary-color);
             padding: 0.25rem 0.75rem;
             border-radius: 15px;
@@ -335,10 +345,6 @@
 
             .kosan-actions {
                 flex-direction: column;
-            }
-
-            .kosan-actions .btn {
-                flex: none;
             }
         }
     </style>

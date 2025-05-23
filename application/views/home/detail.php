@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Kosan - <?php echo htmlspecialchars($kosan['nama']); ?></title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Detail Kosan - <?php echo htmlspecialchars($kosan['nama'], ENT_QUOTES, 'UTF-8'); ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
+            --primary-color: #800000; /* Maroon utama */
+            --primary-color-dark: #a52a2a; /* Maroon untuk hover */
             --secondary-color: #64748b;
-            --success-color: #10b981;
+            --success-color: #22c55e;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
             --light-gray: #f8fafc;
@@ -20,7 +21,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f4f6f9; /* Konsisten dengan desain sebelumnya */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             padding: 2rem 0;
@@ -28,7 +29,7 @@
 
         .main-container {
             background: white;
-            border-radius: 20px;
+            border-radius: 15px;
             box-shadow: var(--shadow-lg);
             overflow: hidden;
             margin: 0 auto;
@@ -36,7 +37,7 @@
         }
 
         .header-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             color: white;
             padding: 2rem;
             position: relative;
@@ -46,21 +47,21 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .back-btn {
-            background: rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
             transition: all 0.3s ease;
         }
 
         .back-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
+            background: linear-gradient(135deg, var(--primary-color-dark) 0%, var(--primary-color) 100%);
             transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .content-section {
@@ -91,6 +92,7 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: transform 0.3s ease;
+            border: 2px solid var(--primary-color); /* Maroon untuk border */
         }
 
         .gallery-item:hover {
@@ -123,7 +125,7 @@
         .detail-icon {
             width: 40px;
             height: 40px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -167,9 +169,9 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.75rem 1rem;
-            background: rgba(37, 99, 235, 0.05);
+            background: rgba(128, 0, 0, 0.05); /* Maroon transparan */
             border-radius: 10px;
-            border: 1px solid rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(128, 0, 0, 0.1);
         }
 
         .facility-icon {
@@ -198,7 +200,7 @@
 
         .review-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 1rem;
         }
@@ -212,7 +214,7 @@
         .reviewer-avatar {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -249,21 +251,20 @@
         }
 
         .btn {
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             padding: 0.75rem 1.5rem;
             transition: all 0.3s ease;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%);
             border: none;
             box-shadow: var(--shadow);
         }
 
         .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-color-dark) 0%, var(--primary-color) 100%);
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
         }
@@ -271,6 +272,12 @@
         .btn-warning {
             background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
             border: none;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .no-data {
@@ -296,8 +303,17 @@
         }
 
         .maps-link:hover {
-            color: #1e40af;
+            color: var(--primary-color-dark);
             transform: translateX(5px);
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            color: #1e40af;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         @media (max-width: 768px) {
@@ -336,9 +352,9 @@
     <div class="main-container">
         <div class="header-section">
             <a href="<?php echo base_url('home'); ?>" class="btn back-btn mb-3">
-                <i class="fas fa-arrow-left"></i> Kembali ke Daftar
+                <i class="bi bi-arrow-left"></i> Kembali ke Daftar
             </a>
-            <h1><i class="fas fa-home"></i> <?php echo htmlspecialchars($kosan['nama']); ?></h1>
+            <h1><i class="bi bi-house-fill"></i> <?php echo htmlspecialchars($kosan['nama'], ENT_QUOTES, 'UTF-8'); ?></h1>
         </div>
 
         <div class="content-section">
@@ -346,19 +362,19 @@
             <?php if (!empty($foto_kosan)): ?>
                 <div class="gallery-section">
                     <h3 class="section-title">
-                        <i class="fas fa-images"></i> Galeri Foto
+                        <i class="bi bi-images"></i> Galeri Foto
                     </h3>
                     <div class="gallery-grid">
                         <?php foreach ($foto_kosan as $foto): ?>
                             <div class="gallery-item">
-                                <img src="<?php echo base_url($foto['path']); ?>" alt="Foto Kosan" onclick="openModal(this.src)">
+                                <img src="<?php echo base_url(htmlspecialchars($foto['path'], ENT_QUOTES, 'UTF-8')); ?>" alt="Foto Kosan" onclick="openModal(this.src)">
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
             <?php else: ?>
                 <div class="no-data">
-                    <i class="fas fa-image"></i>
+                    <i class="bi bi-image"></i>
                     <h4>Tidak Ada Foto</h4>
                     <p>Belum ada foto yang tersedia untuk kosan ini.</p>
                 </div>
@@ -367,22 +383,22 @@
             <!-- Detail Information -->
             <div class="info-card">
                 <h3 class="section-title">
-                    <i class="fas fa-info-circle"></i> Informasi Detail
+                    <i class="bi bi-info-circle"></i> Informasi Detail
                 </h3>
                 <div class="detail-grid">
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-map-marker-alt"></i>
+                            <i class="bi bi-geo-alt-fill"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Alamat</h6>
-                            <p><?php echo htmlspecialchars($kosan['alamat']); ?>, <?php echo htmlspecialchars($kosan['desa']); ?>, <?php echo htmlspecialchars($kosan['kecamatan']); ?></p>
+                            <p><?php echo htmlspecialchars($kosan['alamat'], ENT_QUOTES, 'UTF-8'); ?>, <?php echo htmlspecialchars($kosan['desa'], ENT_QUOTES, 'UTF-8'); ?>, <?php echo htmlspecialchars($kosan['kecamatan'], ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     </div>
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-money-bill-wave"></i>
+                            <i class="bi bi-currency-dollar"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Harga per Bulan</h6>
@@ -392,47 +408,47 @@
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-users"></i>
+                            <i class="bi bi-people"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Tipe Kosan</h6>
-                            <p><?php echo htmlspecialchars(ucfirst($kosan['tipe'])); ?></p>
+                            <p><?php echo htmlspecialchars(ucfirst($kosan['tipe']), ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     </div>
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-user-friends"></i>
+                            <i class="bi bi-person-lines-fill"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Kepribadian</h6>
-                            <p><?php echo htmlspecialchars(ucfirst($kosan['kepribadian'])); ?></p>
+                            <p><?php echo htmlspecialchars(ucfirst($kosan['kepribadian']), ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     </div>
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-door-open"></i>
+                            <i class="bi bi-door-open"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Jumlah Kamar</h6>
-                            <p><?php echo htmlspecialchars($kosan['jumlah_kamar']); ?> kamar</p>
+                            <p><?php echo htmlspecialchars($kosan['jumlah_kamar'], ENT_QUOTES, 'UTF-8'); ?> kamar</p>
                         </div>
                     </div>
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-door-closed"></i>
+                            <i class="bi bi-door-closed"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Kamar Tersedia</h6>
-                            <p><?php echo htmlspecialchars($kosan['kamar_tersedia']); ?> kamar</p>
+                            <p><?php echo htmlspecialchars($kosan['kamar_tersedia'], ENT_QUOTES, 'UTF-8'); ?> kamar</p>
                         </div>
                     </div>
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-star"></i>
+                            <i class="bi bi-star-fill"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Rating</h6>
@@ -444,13 +460,13 @@
                                     $hasHalfStar = ($rating - $fullStars) >= 0.5;
                                     
                                     for ($i = 0; $i < $fullStars; $i++) {
-                                        echo '<i class="fas fa-star"></i>';
+                                        echo '<i class="bi bi-star-fill"></i>';
                                     }
                                     if ($hasHalfStar) {
-                                        echo '<i class="fas fa-star-half-alt"></i>';
+                                        echo '<i class="bi bi-star-half"></i>';
                                     }
                                     for ($i = $fullStars + ($hasHalfStar ? 1 : 0); $i < 5; $i++) {
-                                        echo '<i class="far fa-star"></i>';
+                                        echo '<i class="bi bi-star"></i>';
                                     }
                                     ?>
                                 </div>
@@ -461,11 +477,11 @@
 
                     <div class="detail-item">
                         <div class="detail-icon">
-                            <i class="fas fa-user"></i>
+                            <i class="bi bi-person"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Pemilik</h6>
-                            <p><?php echo htmlspecialchars($kosan['nama_pemilik'] ?: 'Tidak diketahui'); ?></p>
+                            <p><?php echo htmlspecialchars($kosan['nama_pemilik'] ?: 'Tidak diketahui', ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     </div>
                 </div>
@@ -473,11 +489,11 @@
                 <?php if ($kosan['deskripsi']): ?>
                     <div class="detail-item" style="grid-column: 1 / -1; margin-top: 1rem;">
                         <div class="detail-icon">
-                            <i class="fas fa-align-left"></i>
+                            <i class="bi bi-text-left"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Deskripsi</h6>
-                            <p><?php echo htmlspecialchars($kosan['deskripsi']); ?></p>
+                            <p><?php echo htmlspecialchars($kosan['deskripsi'], ENT_QUOTES, 'UTF-8'); ?></p>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -485,12 +501,12 @@
                 <?php if ($kosan['google_maps_link']): ?>
                     <div class="detail-item" style="grid-column: 1 / -1; margin-top: 1rem;">
                         <div class="detail-icon">
-                            <i class="fas fa-map"></i>
+                            <i class="bi bi-map"></i>
                         </div>
                         <div class="detail-content">
                             <h6>Lokasi</h6>
-                            <a href="<?php echo htmlspecialchars($kosan['google_maps_link']); ?>" target="_blank" class="maps-link">
-                                <i class="fas fa-external-link-alt"></i> Lihat di Google Maps
+                            <a href="<?php echo htmlspecialchars($kosan['google_maps_link'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" class="maps-link">
+                                <i class="bi bi-box-arrow-up-right"></i> Lihat di Google Maps
                             </a>
                         </div>
                     </div>
@@ -500,20 +516,20 @@
             <!-- Facilities Section -->
             <div class="info-card">
                 <h3 class="section-title">
-                    <i class="fas fa-concierge-bell"></i> Fasilitas
+                    <i class="bi bi-concierge-bell"></i> Fasilitas
                 </h3>
                 <?php if (!empty($fasilitas)): ?>
                     <div class="facilities-grid">
                         <?php foreach ($fasilitas as $f): ?>
                             <div class="facility-item">
-                                <i class="fas fa-check-circle facility-icon"></i>
-                                <span><?php echo htmlspecialchars($f['nama_fasilitas']); ?></span>
+                                <i class="bi bi-check-circle-fill facility-icon"></i>
+                                <span><?php echo htmlspecialchars($f['nama_fasilitas'], ENT_QUOTES, 'UTF-8'); ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <div class="no-data">
-                        <i class="fas fa-concierge-bell"></i>
+                        <i class="bi bi-concierge-bell"></i>
                         <h4>Tidak Ada Fasilitas</h4>
                         <p>Belum ada fasilitas yang terdaftar untuk kosan ini.</p>
                     </div>
@@ -523,12 +539,12 @@
             <!-- Reviews Section -->
             <div class="info-card">
                 <h3 class="section-title">
-                    <i class="fas fa-comments"></i> Ulasan & Rating
+                    <i class="bi bi-chat-left-text"></i> Ulasan & Rating
                 </h3>
                 
                 <?php if (empty($ulasan_list)): ?>
                     <div class="no-data">
-                        <i class="fas fa-comment-slash"></i>
+                        <i class="bi bi-chat-left-slash"></i>
                         <h4>Belum Ada Ulasan</h4>
                         <p>Jadilah yang pertama memberikan ulasan untuk kosan ini.</p>
                     </div>
@@ -541,18 +557,18 @@
                                         <?php echo strtoupper(substr($ulasan['penyewa_username'] ?: 'A', 0, 1)); ?>
                                     </div>
                                     <div class="reviewer-details">
-                                        <h6><?php echo htmlspecialchars($ulasan['penyewa_username'] ?: 'Anonim'); ?></h6>
+                                        <h6><?php echo htmlspecialchars($ulasan['penyewa_username'] ?: 'Anonim', ENT_QUOTES, 'UTF-8'); ?></h6>
                                         <div class="review-rating">
                                             <?php 
                                             $userRating = $ulasan['rating'];
                                             for ($i = 1; $i <= 5; $i++) {
-                                                echo $i <= $userRating ? '<i class="fas fa-star" style="color: #fbbf24;"></i>' : '<i class="far fa-star" style="color: #d1d5db;"></i>';
+                                                echo $i <= $userRating ? '<i class="bi bi-star-fill" style="color: #fbbf24;"></i>' : '<i class="bi bi-star" style="color: #d1d5db;"></i>';
                                             }
                                             ?>
                                             <span class="ms-2"><?php echo number_format($ulasan['rating'], 1); ?>/5</span>
                                         </div>
                                         <div class="review-date">
-                                            <i class="fas fa-calendar-alt"></i>
+                                            <i class="bi bi-calendar-event"></i>
                                             <?php echo date('d F Y, H:i', strtotime($ulasan['created_at'])); ?>
                                         </div>
                                     </div>
@@ -561,15 +577,15 @@
                             
                             <?php if ($ulasan['ulasan']): ?>
                                 <div class="review-content">
-                                    <i class="fas fa-quote-left" style="color: var(--secondary-color); margin-right: 0.5rem;"></i>
-                                    <?php echo htmlspecialchars($ulasan['ulasan']); ?>
-                                    <i class="fas fa-quote-right" style="color: var(--secondary-color); margin-left: 0.5rem;"></i>
+                                    <i class="bi bi-quote" style="color: var(--secondary-color); margin-right: 0.5rem;"></i>
+                                    <?php echo htmlspecialchars($ulasan['ulasan'], ENT_QUOTES, 'UTF-8'); ?>
+                                    <i class="bi bi-quote" style="color: var(--secondary-color); margin-left: 0.5rem;"></i>
                                 </div>
                             <?php endif; ?>
 
                             <?php if ($this->session->userdata('user_id') == $ulasan['penyewa_id']): ?>
                                 <a href="<?php echo base_url('penyewa/edit_ulasan/' . $ulasan['id']); ?>" class="btn btn-warning btn-sm mt-2">
-                                    <i class="fas fa-edit"></i> Edit Ulasan
+                                    <i class="bi bi-pencil-square"></i> Edit Ulasan
                                 </a>
                             <?php endif; ?>
                         </div>
@@ -579,12 +595,12 @@
                 <?php if ($bisa_ulas && !$ulasan_exist): ?>
                     <div class="text-center mt-3">
                         <a href="<?php echo base_url('penyewa/beri_ulasan/' . $kosan['id']); ?>" class="btn btn-primary">
-                            <i class="fas fa-star"></i> Beri Ulasan dari Riwayat Sewa
+                            <i class="bi bi-star-fill"></i> Beri Ulasan dari Riwayat Sewa
                         </a>
                     </div>
                 <?php elseif ($bisa_ulas && $ulasan_exist): ?>
                     <div class="alert alert-info mt-3">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="bi bi-info-circle"></i>
                         Anda sudah memberikan ulasan untuk riwayat sewa kosan ini.
                     </div>
                 <?php endif; ?>
@@ -607,7 +623,7 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function openModal(imageSrc) {
             document.getElementById('modalImage').src = imageSrc;

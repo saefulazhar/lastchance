@@ -273,26 +273,46 @@ class Api extends RestController {
         $this->load->library('upload', $config);
 
         $foto_paths = [];
-        if (!empty($_FILES['foto_kosan']['name'][0])) {
-            $files = $_FILES['foto_kosan'];
-            $count = count($_FILES['foto_kosan']['name']);
-            for ($i = 0; $i < $count; $i++) {
-                if (!empty($files['name'][$i])) {
-                    $_FILES['file']['name'] = $files['name'][$i];
-                    $_FILES['file']['type'] = $files['type'][$i];
-                    $_FILES['file']['tmp_name'] = $files['tmp_name'][$i];
-                    $_FILES['file']['error'] = $files['error'][$i];
-                    $_FILES['file']['size'] = $files['size'][$i];
+        // Validasi apakah foto_kosan ada dan merupakan array untuk multiple files
+        if (!empty($_FILES['foto_kosan']['name'])) {
+            if (is_array($_FILES['foto_kosan']['name'])) {
+                $files = $_FILES['foto_kosan'];
+                $count = count($files['name']);
+                for ($i = 0; $i < $count; $i++) {
+                    if (!empty($files['name'][$i])) {
+                        $_FILES['file']['name'] = $files['name'][$i];
+                        $_FILES['file']['type'] = $files['type'][$i];
+                        $_FILES['file']['tmp_name'] = $files['tmp_name'][$i];
+                        $_FILES['file']['error'] = $files['error'][$i];
+                        $_FILES['file']['size'] = $files['size'][$i];
 
-                    if ($this->upload->do_upload('file')) {
-                        $upload_data = $this->upload->data();
-                        $foto_paths[] = $upload_data['file_name'];
-                    } else {
-                        $this->response([
-                            'status' => FALSE,
-                            'pesan' => 'Gagal mengunggah foto: ' . $this->upload->display_errors()
-                        ], RestController::HTTP_BAD_REQUEST);
+                        if ($this->upload->do_upload('file')) {
+                            $upload_data = $this->upload->data();
+                            $foto_paths[] = $upload_data['file_name'];
+                        } else {
+                            $this->response([
+                                'status' => FALSE,
+                                'pesan' => 'Gagal mengunggah foto: ' . $this->upload->display_errors()
+                            ], RestController::HTTP_BAD_REQUEST);
+                        }
                     }
+                }
+            } else {
+                // Handle single file upload (opsional, jika ingin mendukung)
+                $_FILES['file']['name'] = $_FILES['foto_kosan']['name'];
+                $_FILES['file']['type'] = $_FILES['foto_kosan']['type'];
+                $_FILES['file']['tmp_name'] = $_FILES['foto_kosan']['tmp_name'];
+                $_FILES['file']['error'] = $_FILES['foto_kosan']['error'];
+                $_FILES['file']['size'] = $_FILES['foto_kosan']['size'];
+
+                if ($this->upload->do_upload('file')) {
+                    $upload_data = $this->upload->data();
+                    $foto_paths[] = $upload_data['file_name'];
+                } else {
+                    $this->response([
+                        'status' => FALSE,
+                        'pesan' => 'Gagal mengunggah foto: ' . $this->upload->display_errors()
+                    ], RestController::HTTP_BAD_REQUEST);
                 }
             }
         }
@@ -389,36 +409,59 @@ class Api extends RestController {
         $this->load->library('upload', $config);
 
         $foto_paths = [];
-        if (!empty($_FILES['foto_kosan']['name'][0])) {
-            $files = $_FILES['foto_kosan'];
-            $count = count($_FILES['foto_kosan']['name']);
-            for ($i = 0; $i < $count; $i++) {
-                if (!empty($files['name'][$i])) {
-                    $_FILES['file']['name'] = $files['name'][$i];
-                    $_FILES['file']['type'] = $files['type'][$i];
-                    $_FILES['file']['tmp_name'] = $files['tmp_name'][$i];
-                    $_FILES['file']['error'] = $files['error'][$i];
-                    $_FILES['file']['size'] = $files['size'][$i];
+        // Validasi apakah foto_kosan ada dan merupakan array untuk multiple files
+        if (!empty($_FILES['foto_kosan']['name'])) {
+            if (is_array($_FILES['foto_kosan']['name'])) {
+                $files = $_FILES['foto_kosan'];
+                $count = count($files['name']);
+                for ($i = 0; $i < $count; $i++) {
+                    if (!empty($files['name'][$i])) {
+                        $_FILES['file']['name'] = $files['name'][$i];
+                        $_FILES['file']['type'] = $files['type'][$i];
+                        $_FILES['file']['tmp_name'] = $files['tmp_name'][$i];
+                        $_FILES['file']['error'] = $files['error'][$i];
+                        $_FILES['file']['size'] = $files['size'][$i];
 
-                    if ($this->upload->do_upload('file')) {
-                        $upload_data = $this->upload->data();
-                        $foto_paths[] = $upload_data['file_name'];
-                    } else {
-                        $this->response([
-                            'status' => FALSE,
-                            'pesan' => 'Gagal mengunggah foto: ' . $this->upload->display_errors()
-                        ], RestController::HTTP_BAD_REQUEST);
+                        if ($this->upload->do_upload('file')) {
+                            $upload_data = $this->upload->data();
+                            $foto_paths[] = $upload_data['file_name'];
+                        } else {
+                            $this->response([
+                                'status' => FALSE,
+                                'pesan' => 'Gagal mengunggah foto: ' . $this->upload->display_errors()
+                            ], RestController::HTTP_BAD_REQUEST);
+                        }
                     }
                 }
-            }
+            } else {
+                // Handle single file upload (opsional, jika ingin mendukung)
+                $_FILES['file']['name'] = $_FILES['foto_kosan']['name'];
+                $_FILES['file']['type'] = $_FILES['foto_kosan']['type'];
+                $_FILES['file']['tmp_name'] = $_FILES['foto_kosan']['tmp_name'];
+                $_FILES['file']['error'] = $_FILES['foto_kosan']['error'];
+                $_FILES['file']['size'] = $_FILES['foto_kosan']['size'];
 
-            foreach ($this->Kosan_model->get_foto_kosan($id) as $foto) {
-                $file_path = FCPATH . 'uploads/kosan/' . basename($foto['path']);
-                if (file_exists($file_path)) {
-                    unlink($file_path);
+                if ($this->upload->do_upload('file')) {
+                    $upload_data = $this->upload->data();
+                    $foto_paths[] = $upload_data['file_name'];
+                } else {
+                    $this->response([
+                        'status' => FALSE,
+                        'pesan' => 'Gagal mengunggah foto: ' . $this->upload->display_errors()
+                    ], RestController::HTTP_BAD_REQUEST);
                 }
             }
-            $this->Kosan_model->delete_foto_kosan($id);
+
+            // Hapus foto lama jika ada upload baru
+            if (!empty($foto_paths)) {
+                foreach ($this->Kosan_model->get_foto_kosan($id) as $foto) {
+                    $file_path = FCPATH . 'uploads/kosan/' . basename($foto['path']);
+                    if (file_exists($file_path)) {
+                        unlink($file_path);
+                    }
+                }
+                $this->Kosan_model->delete_foto_kosan($id);
+            }
         }
 
         $data_kosan = [

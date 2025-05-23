@@ -179,7 +179,7 @@ public function beri_ulasan($kosan_id) {
             'ulasan' => $this->input->post('ulasan')
         );
 
-        if ($this->Ulasan_model->insert_ulasan($data)) {
+        if ($this->Ulasan_model->create_ulasan($data)) {
             // Update rating rata-rata di tabel kosan
             $rata_rating = $this->Kosan_model->get_average_rating($kosan_id);
             $this->Kosan_model->update_kosan_rating($kosan_id, $rata_rating);
