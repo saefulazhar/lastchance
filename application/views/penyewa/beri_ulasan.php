@@ -4,226 +4,188 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beri Ulasan Kosan - BapakKos</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome untuk ikon -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
         .review-container {
             max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
         .review-card {
             background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .review-header {
-            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
+            background: #a52a2a; /* Maroon cerah untuk header */
             color: white;
-            padding: 25px 30px;
+            padding: 1.5rem;
             position: relative;
-        }
-        .review-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('/api/placeholder/800/300') center/cover no-repeat;
-            opacity: 0.1;
-            z-index: 0;
         }
         .review-header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
+            font-size: 1.5rem;
             font-weight: 600;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 0.25rem;
         }
         .review-header p {
-            margin-bottom: 0;
-            position: relative;
-            z-index: 1;
+            font-size: 0.9rem;
+            margin: 0;
         }
         .review-form {
-            padding: 30px;
-        }
-        .form-group {
-            margin-bottom: 25px;
+            padding: 1.5rem;
         }
         .form-control {
-            border-radius: 8px;
-            padding: 12px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            width: 100%;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
         .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
-            border-color: #0066cc;
+            border-color: #a52a2a;
+            box-shadow: 0 0 0 3px rgba(165, 42, 42, 0.1);
+            outline: none;
         }
         label {
             font-weight: 500;
-            margin-bottom: 10px;
-            color: #444;
+            color: #374151;
+            margin-bottom: 0.5rem;
             display: block;
         }
         .alert {
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+        }
+        .alert-success {
+            background-color: #dcfce7;
+            color: #166534;
+            border-color: #a52a2a; /* Maroon cerah untuk border */
+        }
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #dc2626;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #0066cc 0%, #004999 100%);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            background-color: #a52a2a; /* Maroon cerah untuk tombol */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
             font-weight: 500;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
         .btn-primary:hover {
+            background-color: #8b2424; /* Maroon sedikit lebih gelap */
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            background: linear-gradient(135deg, #005bb8 0%, #003d80 100%);
         }
-        .rating-stars {
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: flex-start;
-            margin-bottom: 15px;
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
-        .rating-stars input {
-            display: none;
-        }
-        .rating-stars label {
-            cursor: pointer;
-            font-size: 35px;
-            color: #ddd;
-            margin-right: 10px;
-            transition: color 0.3s ease;
-        }
-        .rating-stars label:hover,
-        .rating-stars label:hover ~ label,
-        .rating-stars input:checked ~ label {
-            color: #ffcc00;
-        }
-        .rating-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #0066cc;
-            margin-left: 15px;
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            transform: translateY(-2px);
         }
         .rating-control {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 1rem;
+        }
+        .rating-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #a52a2a;
+            margin-left: 0.75rem;
         }
         .emoji-rating {
-            font-size: 28px;
-            margin-left: 10px;
+            font-size: 1.5rem;
+            margin-left: 0.5rem;
         }
         .custom-range {
             width: 100%;
-            height: 10px;
-            padding: 0;
-            background-color: transparent;
-            appearance: none;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 0.25rem;
+            cursor: pointer;
         }
         .custom-range::-webkit-slider-thumb {
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            background: #0066cc;
+            background: #a52a2a;
             cursor: pointer;
-            margin-top: -6px;
-        }
-        .custom-range::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 8px;
-            cursor: pointer;
-            background: #e0e0e0;
-            border-radius: 4px;
         }
         .star-rating-display {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #ffcc00;
+            font-size: 1.25rem;
+            color: #f59e0b;
+            margin-bottom: 1rem;
         }
         textarea.form-control {
-            min-height: 150px;
+            min-height: 120px;
             resize: vertical;
         }
         .action-buttons {
             display: flex;
-            gap: 15px;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 500;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            background-color: #5a6268;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
         .review-categories {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
         }
         .category-item {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px 15px;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 1px solid #e0e0e0;
         }
         .category-item:hover, .category-item.active {
-            background-color: #e6f3ff;
-            border-color: #0066cc;
+            background-color: #fee2e2;
+            border-color: #a52a2a;
         }
         .category-item i {
-            color: #0066cc;
+            color: #a52a2a;
         }
         .review-tips {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            border-left: 4px solid #0066cc;
+            background-color: #f3f4f6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid #a52a2a;
         }
         .review-tips h5 {
-            color: #0066cc;
-            margin-bottom: 10px;
-            font-size: 1rem;
+            color: #a52a2a;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
         }
         .review-tips ul {
-            margin-bottom: 0;
-            padding-left: 20px;
+            margin: 0;
+            padding-left: 1.25rem;
+            color: #4b5563;
         }
         .review-tips li {
-            margin-bottom: 5px;
-            color: #555;
+            margin-bottom: 0.25rem;
         }
     </style>
 </head>
@@ -231,43 +193,35 @@
     <div class="review-container">
         <div class="review-card">
             <div class="review-header">
-                <h1><i class="fas fa-star me-2"></i> Beri Ulasan untuk Kosan</h1>
+                <h1><i class="fas fa-star mr-2"></i>Beri Ulasan untuk Kosan</h1>
                 <p>Bagikan pengalaman Anda untuk membantu pengguna lain</p>
             </div>
-            
             <div class="review-form">
-                <!-- Alert Notifications -->
                 <?php if ($this->session->flashdata('success')): ?>
                     <div class="alert alert-success">
-                        <i class="fas fa-check-circle me-2"></i>
+                        <i class="fas fa-check-circle mr-2"></i>
                         <?php echo htmlspecialchars($this->session->flashdata('success')); ?>
                     </div>
                 <?php endif; ?>
-                
                 <?php if ($this->session->flashdata('error')): ?>
                     <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <i class="fas fa-exclamation-circle mr-2"></i>
                         <?php echo htmlspecialchars($this->session->flashdata('error')); ?>
                     </div>
                 <?php endif; ?>
-                
-                <?php echo validation_errors('<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>', '</div>'); ?>
-                
+                <?php echo validation_errors('<div class="alert alert-danger"><i class="fas fa-exclamation-circle mr-2"></i>', '</div>'); ?>
                 <?php echo form_open('penyewa/beri_ulasan/' . $kosan_id); ?>
-                    <!-- Rating Section -->
-                    <div class="form-group">
-                        <label for="rating">
-                            <i class="fas fa-star me-2"></i>Rating (1-5)
+                    <div class="mb-6">
+                        <label for="rating" class="flex items-center">
+                            <i class="fas fa-star mr-2"></i>Rating (1-5)
                         </label>
-                        
                         <div class="rating-control">
                             <input type="range" class="custom-range" id="ratingSlider" min="0" max="5" step="0.1" value="3" oninput="updateRating(this.value)">
                             <span class="rating-value" id="ratingValue">3</span>
                             <span class="emoji-rating" id="ratingEmoji">😊</span>
                             <input type="hidden" name="rating" id="rating" value="3">
                         </div>
-                        
-                        <div class="star-rating-display mb-2" id="starDisplay">
+                        <div class="star-rating-display" id="starDisplay">
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
                             <i class="fas fa-star"></i>
@@ -275,8 +229,6 @@
                             <i class="far fa-star"></i>
                         </div>
                     </div>
-                    
-                    <!-- Review Categories (Optional, for UI only) -->
                     <div class="review-categories">
                         <div class="category-item" onclick="toggleActive(this)">
                             <i class="fas fa-broom"></i>
@@ -299,18 +251,15 @@
                             <span>Keamanan</span>
                         </div>
                     </div>
-                    
-                    <!-- Ulasan Section -->
-                    <div class="form-group">
-                        <label for="ulasan">
-                            <i class="fas fa-comment me-2"></i>Ulasan Anda
+                    <div class="mb-6">
+                        <label for="ulasan" class="flex items-center">
+                            <i class="fas fa-comment mr-2"></i>Ulasan Anda
                         </label>
                         <textarea name="ulasan" id="ulasan" class="form-control" rows="4" placeholder="Bagikan pengalaman Anda tinggal di kosan ini..."></textarea>
+                        <small class="text-red-500"><?php echo form_error('ulasan'); ?></small>
                     </div>
-                    
-                    <!-- Review Tips -->
                     <div class="review-tips">
-                        <h5><i class="fas fa-lightbulb me-2"></i>Tips Menulis Ulasan yang Baik:</h5>
+                        <h5><i class="fas fa-lightbulb mr-2"></i>Tips Menulis Ulasan yang Baik:</h5>
                         <ul>
                             <li>Jelaskan pengalaman Anda secara detail dan jujur</li>
                             <li>Sebutkan kelebihan dan kekurangan kosan</li>
@@ -318,40 +267,27 @@
                             <li>Sampaikan apakah kosan ini sesuai dengan nilai uang yang dibayarkan</li>
                         </ul>
                     </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="action-buttons mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-2"></i>Kirim Ulasan
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane mr-2"></i>Kirim Ulasan
                         </button>
-                        <a href="javascript:history.back()" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Kembali
+                        <a href="javascript:history.back()" class="btn-secondary">
+                            <i class="fas fa-arrow-left mr-2"></i>Kembali
                         </a>
                     </div>
                 <?php echo form_close(); ?>
             </div>
         </div>
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Initialize the display on page load
         document.addEventListener('DOMContentLoaded', function() {
-            updateRating(3); // Default rating of 3
+            updateRating(3);
         });
-        
-        // Update rating display
+
         function updateRating(value) {
-            // Update hidden input and visible value
             document.getElementById('rating').value = value;
             document.getElementById('ratingValue').textContent = value;
-            
-            // Update stars display
-            const starCount = Math.floor(value);
-            const fraction = value - starCount;
-            
-            // Update emoji based on rating
             const ratingEmoji = document.getElementById('ratingEmoji');
             if (value >= 4.5) {
                 ratingEmoji.textContent = '😍';
@@ -364,43 +300,32 @@
             } else {
                 ratingEmoji.textContent = '😞';
             }
-            
-            // Update star display
             const starDisplay = document.getElementById('starDisplay');
             starDisplay.innerHTML = '';
-            
-            // Full stars
-            for (let i = 0; i < Math.floor(value); i++) {
+            const starCount = Math.floor(value);
+            const fraction = value - starCount;
+            for (let i = 0; i < starCount; i++) {
                 starDisplay.innerHTML += '<i class="fas fa-star"></i>';
             }
-            
-            // Half star if needed
             if (fraction >= 0.3 && fraction < 0.8) {
                 starDisplay.innerHTML += '<i class="fas fa-star-half-alt"></i>';
             } else if (fraction >= 0.8) {
                 starDisplay.innerHTML += '<i class="fas fa-star"></i>';
             }
-            
-            // Empty stars
             const emptyStars = 5 - Math.ceil(value);
             for (let i = 0; i < emptyStars; i++) {
                 starDisplay.innerHTML += '<i class="far fa-star"></i>';
             }
         }
-        
-        // Toggle active class for category items
+
         function toggleActive(element) {
             element.classList.toggle('active');
-            
-            // Get all selected categories to help with review suggestions
             const selectedCategories = document.querySelectorAll('.category-item.active');
             let placeholderText = "Bagikan pengalaman Anda tinggal di kosan ini...";
-            
             if (selectedCategories.length > 0) {
                 placeholderText += "\n\nBeberapa hal yang dapat Anda bahas:";
                 selectedCategories.forEach(category => {
                     const categoryText = category.querySelector('span').textContent;
-                    
                     switch(categoryText) {
                         case 'Kebersihan':
                             placeholderText += "\n- Bagaimana kondisi kebersihan kamar dan area umum?";
@@ -420,7 +345,6 @@
                     }
                 });
             }
-            
             document.getElementById('ulasan').placeholder = placeholderText;
         }
     </script>
