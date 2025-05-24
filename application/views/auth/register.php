@@ -201,7 +201,7 @@
     <div class="container register-container">
         <div class="register-card">
             <div class="register-header">
-                <h1><i class="bi bi-person-plus-fill me-2"></i> Registrasi ke BapakKos</h1>
+                <h1><i class="bi bi-person-plus-fill me-2"></i> Registrasi ke Horikos</h1>
                 <p>Temukan atau sewakan kosan dengan mudah</p>
             </div>
             

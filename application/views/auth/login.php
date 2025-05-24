@@ -248,7 +248,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <h1><i class="bi bi-lock-fill me-2"></i> Login ke BapakKos</h1>
+                <h1><i class="bi bi-lock-fill me-2"></i> Login ke Horikos</h1>
                 <p>Akses akun Anda untuk mencari atau mengelola kosan</p>
             </div>
             

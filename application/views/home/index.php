@@ -385,12 +385,12 @@
                                         <i class="fas fa-money-bill-wave"></i> Harga
                                     </label>
                                     <div class="form-check">
-                                        <input type="checkbox" name="harga[]" value="0-1000000" class="form-check-input" id="harga1">
+                                        <input type="checkbox" name="harga[]" value="1-1000000" class="form-check-input" id="harga1">
                                         <label class="form-check-label" for="harga1">0 - 1 Juta</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" name="harga[]" value="1000001-2000000" class="form-check-input" id="harga2">
-                                        <label class="form-check-label" for="harga2">1 Juta - 2 Juta</label>
+                                        <label class="form-check-label" for="harga2"> 1 Juta - 2 Juta</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" name="harga[]" value="2000001-999999999" class="form-check-input" id="harga3">
